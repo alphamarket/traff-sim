@@ -1,6 +1,7 @@
 #include "inc/Croad.hpp"
 
-Croad::Croad()
+Croad::Croad(const size_t size)
+    : Joint(size)
 {
 
 }

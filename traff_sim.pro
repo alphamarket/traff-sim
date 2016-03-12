@@ -22,4 +22,5 @@ HEADERS += \
     inc/Street.hpp \
     inc/Car.hpp \
     inc/Troad.hpp \
-    inc/Croad.hpp
+    inc/Croad.hpp \
+    inc/Joint.hpp

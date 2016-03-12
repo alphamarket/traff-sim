@@ -1,11 +1,13 @@
 #ifndef CROAD_H
 #define CROAD_H
 
+#include "stdafx.hpp"
+#include "Joint.hpp"
 
-class Croad
+class Croad : public Joint
 {
 public:
-    Croad();
+    Croad(const size_t);
     ~Croad();
 };
 

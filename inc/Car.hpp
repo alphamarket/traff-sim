@@ -1,12 +1,12 @@
 #ifndef CAR_H
 #define CAR_H
 
+#include "stdafx.hpp"
+#include "Street.hpp"
 
 class Car
 {
 public:
-    Car();
-    ~Car();
 };
 
 #endif // CAR_H

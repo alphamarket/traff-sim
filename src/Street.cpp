@@ -1,6 +1,7 @@
 #include "inc/Street.hpp"
 
-Street::Street()
+Street::Street(const string name)
+    : _name(name)
 {
 
 }

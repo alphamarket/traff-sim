@@ -16,7 +16,9 @@
 
 #include <time.h>
 #include <random>
+#include <memory>
 #include <cstdlib>
+#include <stdexcept>
 using namespace std;
 
 #define get_rand(min, range)((min) + rand() % (range))

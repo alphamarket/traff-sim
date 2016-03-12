@@ -1,11 +1,13 @@
 #ifndef TROAD_H
 #define TROAD_H
 
+#include "stdafx.hpp"
+#include "Joint.hpp"
 
-class Troad
+class Troad : public Joint
 {
 public:
-    Troad();
+    Troad(const size_t);
     ~Troad();
 };
 
