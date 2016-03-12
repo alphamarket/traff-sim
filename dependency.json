@@ -1,0 +1,24 @@
+[
+    {
+        "name": "Boost",
+        "description": "Boost is a set of libraries for the C++ programming language that provide support for tasks and structures such as linear algebra, pseudorandom number generation, multithreading, image processing, regular expressions, and unit testing.",
+        "site": "www.boost.org",
+        "installation": {
+            "version": "1.54.0",
+            "command": {
+                "ubuntu": "sudo apt-get install libboost-all-dev"
+            }
+        }
+    },
+	{
+        "name": "Eigen",
+        "description": "Eigen is a C++ template library for linear algebra: matrices, vectors, numerical solvers, and related algorithms.",
+        "site": "eigen.tuxfamily.org",
+        "installation": {
+            "version": "3",
+            "command": {
+                "ubuntu": "sudo apt-get install libeigen3-dev"
+            }
+        }
+    }
+]
