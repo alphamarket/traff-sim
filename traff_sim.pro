@@ -9,7 +9,17 @@ LIBS += -lpthread
 INCLUDEPATH += .
 
 SOURCES += \
-    main.cpp
+    main.cpp \
+    src/TCU.cpp \
+    src/Street.cpp \
+    src/Car.cpp \
+    src/Troad.cpp \
+    src/Croad.cpp
 
 HEADERS += \
-    inc/stdafx.hpp
+    inc/stdafx.hpp \
+    inc/TCU.hpp \
+    inc/Street.hpp \
+    inc/Car.hpp \
+    inc/Troad.hpp \
+    inc/Croad.hpp
