@@ -10,11 +10,11 @@ int main(int, char**) {
     // a traffic report sent from streets/joints to TCU
     // TCU monitors/predicts/changes the lights/reports status
     street s(10, "s0");
-    FOR(i,0,2,++) {
+    FOR(i,0,4,++) {
         car_ptr c(new car("C-"+to_string(i)));
-        c->direction() = (i % 2 ? HEAD : TAIL);
-        s.inBoundCar(c);
-        c->speed() = 10 * (i + 1);
+        c->direction() = (i < 2 ? HEAD : TAIL);
+        assert(s.inBoundCar(c));
+        c->speed() = 10 * (i % 2 + 1);
         cout<<"CAR "<<*c<<endl;
     }
     cout<<"----"<<endl;

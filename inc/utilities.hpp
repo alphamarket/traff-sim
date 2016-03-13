@@ -11,4 +11,6 @@ typedef enum course {
 
 string to_string(course);
 
+#define invalid_course() throw runtime_error("invalid course!")
+
 #endif // UTILITIES_H

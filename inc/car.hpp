@@ -10,6 +10,7 @@ typedef string car_id_t;
 
 class car
 {
+    int _line;
     float _pos;
     course _dir;
     float _speed;
@@ -26,6 +27,8 @@ public:
     inline float  getLong() const { return CONST_AVG_CAR_LONG; }
     inline float  speed() const { return this->_speed; }
     inline float& speed() { return this->_speed; }
+    inline int& line() { return this->_line; }
+    inline int  line() const { return this->_line; }
     inline friend ostream& operator <<(ostream& os, const car& c) { os << c.to_string(); return os; }
 };
 
