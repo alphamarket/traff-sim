@@ -17,7 +17,10 @@
 #include <time.h>
 #include <random>
 #include <memory>
+#include <sstream>
 #include <cstdlib>
+#include <assert.h>
+#include <iostream>
 #include <stdexcept>
 using namespace std;
 
@@ -52,6 +55,10 @@ using namespace std;
 
 #ifndef SIMULATOR_VERSION
 #   define SIMULATOR_VERSION "v0.0.0"
+#endif
+
+#ifndef FOR
+#   define FOR(i,j,k,o) for(decltype(j+k) i = j; i < k; i o)
 #endif
 
 typedef float scalar;

@@ -10,17 +10,12 @@ INCLUDEPATH += .
 
 SOURCES += \
     main.cpp \
-    src/TCU.cpp \
-    src/Street.cpp \
-    src/Car.cpp \
-    src/Troad.cpp \
-    src/Croad.cpp
+    src/street.cpp \
+    src/car.cpp \
+    src/utilities.cpp
 
 HEADERS += \
     inc/stdafx.hpp \
-    inc/TCU.hpp \
-    inc/Street.hpp \
-    inc/Car.hpp \
-    inc/Troad.hpp \
-    inc/Croad.hpp \
-    inc/Joint.hpp
+    inc/street.hpp \
+    inc/car.hpp \
+    inc/utilities.hpp
