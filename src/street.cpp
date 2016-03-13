@@ -22,77 +22,62 @@ string street::to_string() const {
 string street::status() const {
     stringstream ss;
     ss  << "[Status]" << endl << this->to_string() << endl
-        << "car#" << -1/*this->_cars.size()*/ << " last_pos: { " //<< "m, T:" << this->_tail_last_pos << "m }";
-        << "H: {";
-//    FOR(i,0,CONST_STREET_LINES_NO,++) {
-//        ss << this->_head_last_pos[i];
-//        if(i < CONST_STREET_LINES_NO - 1) ss << ", ";
-//    }
-//    ss << "}, T: {";
-//    FOR(i,0,CONST_STREET_LINES_NO,++) {
-//        ss << this->_tail_last_pos[i];
-//        if(i < CONST_STREET_LINES_NO - 1) ss << ", ";
-//    }
-    ss << "} }";
+        << "car#" << this->size() << " last_pos: { "; //<< "m, T:" << this->_tail_last_pos << "m }";
+
+    FOR(dir, HEAD, TAIL + 1, ++) {
+        ss << ::to_string(course(dir)) << ": {";
+        FOR(line, 0, CONST_STREET_LINES_NO, ++) {
+            if(this->_cars[dir][line].size()) {
+                ss << this->_cars[dir][line].back()->position();
+                if(line < CONST_STREET_LINES_NO - 1) ss << ", ";
+            }
+        }
+        ss << "}, ";
+    }
+    ss << "}";
+
     return ss.str();
 }
 
+size_t street::size(course c) const {
+    size_t s = 0;
+    switch (c) {
+        case HEAD:
+        case TAIL:
+            FOR(line, 0, CONST_STREET_LINES_NO, ++)
+                s += this->_cars[c][line].size();
+            return s;
+        default: invalid_course();
+    }
+}
+
 void street::flow() {
-    FOR(dir, HEAD, TAIL, ++) {
+    FOR(dir, HEAD, TAIL + 1, ++) {
         FOR(line, 0, CONST_STREET_LINES_NO, ++) {
-            for(auto it = this->_cars[dir][line].begin(), last = this->_cars[dir][line].begin(); it != this->_cars[dir][line].end(); last = it) {
-                car_ptr c = *it;
+            auto way = &this->_cars[dir][line];
+            FOR(i, 0, way->size(),++) {
+                car_ptr c = way->at(i);
                 // move as you can!!
-                if(it != last && c->position() + c->speed() >= (*last)->position())
-                    c->position() = (*last)->position() - 0.1 /* 0.1m */;
+                if(i > 0 && c->position() + c->speed() >= way->at(i-1)->position())
+                    c->position() = way->at(i-1)->position() - 0.1 /* 0.1m */;
                 else c->position() += c->speed();
                 if(c->position() + c->getLong() / 2 > this->_length) {
-                    it = this->_cars[dir][line].erase(it);
+                    way->erase(way->begin() + i--);
                     // pass the car to the bound joint
-                    cout<<"Car#: «" << c->getID() <<"» Dir: «" << ::to_string(c->direction()) << "» Exiting the: " << this->to_string() << endl;
+                    cout<<"Car#: «" << c->getID() <<"» Dir: «" << ::to_string(c->direction()) << "» Line: «"<<c->line()<<"» Exiting the: " << this->to_string() << endl;
                 }
             }
+
         }
     }
-
-//    for(auto it = this->_cars.begin(); it != this->_cars.end();) {
-//        pair<car_id_t, car_ptr> cp = *it;
-//        car_ptr c = cp.second;
-//        c->position() += c->speed(); // moves it!!
-//        if(c->position() + c->getLong() / 2 > this->_length) {
-//            it = this->_cars.erase(it);
-//            switch(c->direction()) {
-//                // cars which goes to HEAD will add distance from tail and vice versa.
-//                case HEAD: if(this->_head_joint) this->_head_joint->inBound(c); break;
-//                case TAIL: if(this->_tail_joint) this->_tail_joint->inBound(c); break;
-//                default: invalid_course();
-//            }
-//            // pass the car to the bound joint
-//            cout<<"Car#: «" << c->getID() <<"» Dir: «" << ::to_string(c->direction()) << "» Exiting the: " << this->to_string() << endl;
-//        }
-//        else {
-//            switch(c->direction()) {
-//                // cars which goes to HEAD will add distance from tail and vice versa.
-//                case HEAD: tail_min_pos[c->line()] = min(c->position(), tail_min_pos[c->line()]); break;
-//                case TAIL: head_min_pos[c->line()] = min(c->position(), head_min_pos[c->line()]); break;
-//                default: invalid_course();
-//            }
-//            it++;
-//        }
-//    }
-//    if(!this->size()) {
-//        std::fill(head_min_pos, head_min_pos + sizeof(head_min_pos), INFINITY);
-//        std::fill(tail_min_pos, tail_min_pos + sizeof(tail_min_pos), INFINITY);
-//    }
-//    memcpy(this->_head_last_pos, head_min_pos, sizeof(head_min_pos));
-//    memcpy(this->_tail_last_pos, tail_min_pos, sizeof(tail_min_pos));
 }
 
 bool street::inBoundCar(car_ptr c) {
     c->line() = -1;
     // cars which goes to head should enter from tail!
     FOR(line, 0, CONST_STREET_LINES_NO, ++) {
-        if(this->_cars[c->direction()][line].size() < this->_capacity && this->_cars[c->direction()][line].back()->position() > c->getLong() / 2) {
+        if( this->_cars[c->direction()][line].size() < this->_capacity &&
+            (this->_cars[c->direction()][line].empty() || this->_cars[c->direction()][line].back()->position() > c->getLong() / 2)) {
             c->line() = line;
             break;
         }

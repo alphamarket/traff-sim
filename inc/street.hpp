@@ -5,7 +5,6 @@
 
 #include "car.hpp"
 #include "utilities.hpp"
-#include <list>
 
 #define CONST_STREET_LINES_NO 2
 
@@ -20,7 +19,7 @@ class street
         *_head_joint,
         *_tail_joint;
     float _traffic_weight;
-    list<car_ptr> _cars[2][CONST_STREET_LINES_NO];
+    vector<car_ptr> _cars[2][CONST_STREET_LINES_NO];
 public:
     ~street();
     street(size_t, string = "?");
@@ -30,10 +29,12 @@ public:
     joint*& joints(course);
     string to_string() const;
     bool inBoundCar(car_ptr);
+    size_t size(course c) const;
 
     inline string name() const { return this->_name; }
     inline float& traffic_weight() { return this->_traffic_weight; }
     inline float  traffic_weight() const { return this->_traffic_weight; }
+    inline size_t size() const { return this->size(HEAD) + this->size(TAIL); }
     inline friend ostream& operator <<(ostream& os, const street& s) { os << s.status(); return os; }
 };
 

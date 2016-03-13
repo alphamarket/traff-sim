@@ -14,13 +14,21 @@ int main(int, char**) {
         car_ptr c(new car("C-"+to_string(i)));
         c->direction() = (i < 2 ? HEAD : TAIL);
         assert(s.inBoundCar(c));
-        c->speed() = 10 * (i % 2 + 1);
+        c->speed() = 4.8;
+        cout<<"CAR "<<*c<<endl;
+    }
+    FOR(i,0,5,++) { s.flow(); cout<<s<<endl<<endl; }
+    FOR(i,4,8,++) {
+        car_ptr c(new car("C-"+to_string(i)));
+        c->direction() = (i < 6 ? HEAD : TAIL);
+        assert(s.inBoundCar(c));
+        c->speed() = 20;
         cout<<"CAR "<<*c<<endl;
     }
     cout<<"----"<<endl;
-//    while(s.size()) {
+    while(s.size()) {
         s.flow();
         cout<<s<<endl<<endl;
-//    }
+    }
     return EXIT_SUCCESS;
 }
