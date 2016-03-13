@@ -1,6 +1,7 @@
 #include "inc/street.hpp"
-#include <string.h>
 
+#include <string.h>
+#include <algorithm>
 
 street::street(size_t car_capacity, string name)
     : _name(name), _length(car_capacity * CONST_AVG_CAR_LONG), _capacity(car_capacity),
@@ -104,23 +105,19 @@ joint*& street::joints(course c) {
         default: invalid_course();
     }
 }
-
 bool joint::inBound(car_ptr c, const street* src) {
-    vector<float> vs;
+    size_t index = 0;
+    vector<pair<size_t, float>> vs;
     float sum1 = 0, sum2 = 0, p = frand();
     for(street_ptr& s : this->_streets) {
-        if(s.get() == src) vs.push_back(0);
-        else vs.push_back(exp(s->traffic_weight()));
-        sum1 += vs.back();
+        if(s.get() == src) vs.push_back(make_pair<size_t, float>(index++, 0));
+        else vs.push_back(make_pair<size_t, float>(index++, exp(s->traffic_weight())));
+        sum1 += vs.back().second;
     }
-    size_t index = 0;
-    for(float& f : vs) {
-        if(sum2 + (f / sum1) > p) {
-            return ((street_ptr)this->_streets[index])->inBoundCar(c);
-            break;
-        }
-        index++;
-        sum2 += (f / sum1);
+    sort(vs.begin(), vs.end(), [](pair<size_t, float> p1, pair<size_t, float> p2){ return p1.second < p2.second; });
+    for(pair<size_t, float>& f : vs) {
+        sum2 += (f.second / sum1);
+        if(sum2 > p) return ((street_ptr)this->_streets[f.first])->inBoundCar(c);
     }
     return false;
 }

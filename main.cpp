@@ -26,11 +26,11 @@ int main(int, char**) {
         cout<<"CAR "<<*c<<endl;
     }
     joint j;
-//    j.jointStreet(s0, HEAD);
-//    j.jointStreet(s0, TAIL);
-//    j.jointStreet(street_ptr(new street(20, "s2")), TAIL);
-//    j.jointStreet(street_ptr(new street(20, "s3")), TAIL);
-//    j.jointStreet(street_ptr(new street(20, "s4")), TAIL);
+    j.jointStreet(s0, HEAD);
+    j.jointStreet(s0, TAIL);
+    j.jointStreet(street_ptr(new street(20, "s2")), TAIL);
+    j.jointStreet(street_ptr(new street(20, "s3")), TAIL);
+    j.jointStreet(street_ptr(new street(20, "s4")), TAIL);
     cout<<"----"<<endl;
     while(s0->size()) {
         if(!s0->flow()) { cout<<"[HALT]"<<endl; break; }
