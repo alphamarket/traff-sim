@@ -4,8 +4,8 @@
 #include "stdafx.hpp"
 
 typedef enum course {
+    HEAD = 0, TAIL = 1,
     NORTH, EAST, SOUTH, WEST,
-    HEAD, TAIL,
     NILL
 } course;
 

@@ -18,9 +18,9 @@ int main(int, char**) {
         cout<<"CAR "<<*c<<endl;
     }
     cout<<"----"<<endl;
-    while(s.size()) {
+//    while(s.size()) {
         s.flow();
         cout<<s<<endl<<endl;
-    }
+//    }
     return EXIT_SUCCESS;
 }

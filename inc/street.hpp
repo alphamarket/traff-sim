@@ -5,7 +5,7 @@
 
 #include "car.hpp"
 #include "utilities.hpp"
-#include <unordered_map>
+#include <list>
 
 #define CONST_STREET_LINES_NO 2
 
@@ -19,11 +19,8 @@ class street
     joint
         *_head_joint,
         *_tail_joint;
-    float
-        _traffic_weight,
-        _head_last_pos[CONST_STREET_LINES_NO],
-        _tail_last_pos[CONST_STREET_LINES_NO];
-    unordered_map<car_id_t, car_ptr> _cars;
+    float _traffic_weight;
+    list<car_ptr> _cars[2][CONST_STREET_LINES_NO];
 public:
     ~street();
     street(size_t, string = "?");
@@ -35,9 +32,7 @@ public:
     bool inBoundCar(car_ptr);
 
     inline string name() const { return this->_name; }
-    inline size_t size() const { return this->_cars.size(); }
     inline float& traffic_weight() { return this->_traffic_weight; }
-    inline void outBoundCar(car_ptr c) { this->_cars.erase(c->getID()); }
     inline float  traffic_weight() const { return this->_traffic_weight; }
     inline friend ostream& operator <<(ostream& os, const street& s) { os << s.status(); return os; }
 };
