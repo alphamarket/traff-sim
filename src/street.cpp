@@ -51,7 +51,8 @@ size_t street::size(course c) const {
     }
 }
 
-void street::flow() {
+bool street::flow() {
+    int has_flow = 2;
     FOR(dir, HEAD, TAIL + 1, ++) {
         FOR(line, 0, CONST_STREET_LINES_NO, ++) {
             auto way = &this->_cars[dir][line];
@@ -62,14 +63,22 @@ void street::flow() {
                     c->position() = way->at(i-1)->position() - 0.1 /* 0.1m */;
                 else c->position() += c->speed();
                 if(c->position() + c->getLong() / 2 > this->_length) {
-                    way->erase(way->begin() + i--);
-                    // pass the car to the bound joint
-                    cout<<"Car#: «" << c->getID() <<"» Dir: «" << ::to_string(c->direction()) << "» Line: «"<<c->line()<<"» Exiting the: " << this->to_string() << endl;
+                    joint* _joint = nullptr;
+                    switch(c->direction()) {
+                        case HEAD: _joint = this->_head_joint; break;
+                        case TAIL: _joint = this->_tail_joint; break;
+                        default: invalid_course();
+                    }
+                    if(_joint && this->_head_joint->inBound(c, this)) {
+                        way->erase(way->begin() + i--);
+                        // pass the car to the bound joint
+                        cout<<"Car#: «" << c->getID() <<"» Dir: «" << ::to_string(c->direction()) << "» Line: «"<<c->line()<<"» Exiting the: " << this->to_string() << endl;
+                    } else { has_flow--; line = CONST_STREET_LINES_NO; break; }
                 }
             }
-
         }
     }
+    return has_flow;
 }
 
 bool street::inBoundCar(car_ptr c) {
@@ -96,20 +105,22 @@ joint*& street::joints(course c) {
     }
 }
 
-void joint::inBound(car_ptr c) {
+bool joint::inBound(car_ptr c, const street* src) {
     vector<float> vs;
     float sum1 = 0, sum2 = 0, p = frand();
     for(street_ptr& s : this->_streets) {
-        vs.push_back(exp(s->traffic_weight()));
+        if(s.get() == src) vs.push_back(0);
+        else vs.push_back(exp(s->traffic_weight()));
         sum1 += vs.back();
     }
     size_t index = 0;
     for(float& f : vs) {
-        if(sum2 + (f / sum1) < p) {
-            ((street_ptr)this->_streets[index])->inBoundCar(c);
+        if(sum2 + (f / sum1) > p) {
+            return ((street_ptr)this->_streets[index])->inBoundCar(c);
             break;
         }
         index++;
         sum2 += (f / sum1);
     }
+    return false;
 }

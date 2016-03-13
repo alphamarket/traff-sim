@@ -9,6 +9,10 @@
 #define CONST_STREET_LINES_NO 2
 
 class joint;
+class street;
+
+typedef shared_ptr<joint> joint_ptr;
+typedef shared_ptr<street> street_ptr;
 
 class street
 {
@@ -24,7 +28,7 @@ public:
     ~street();
     street(size_t, string = "?");
 
-    void flow();
+    bool flow();
     string status() const;
     joint*& joints(course);
     string to_string() const;
@@ -38,15 +42,11 @@ public:
     inline friend ostream& operator <<(ostream& os, const street& s) { os << s.status(); return os; }
 };
 
-typedef shared_ptr<street> street_ptr;
-
 class joint
 {
     vector<street_ptr> _streets;
 public:
-    joint();
-    ~joint();
-    void inBound(car_ptr);
+    bool inBound(car_ptr, const street*);
     inline void jointStreet(street_ptr s, course c) { s->joints(c) = this; this->_streets.push_back(s); }
 };
 
