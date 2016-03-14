@@ -15,7 +15,7 @@ addons:
     - cmake
 
 install:
-- if [ "$CXX" = "g++" ]; then export CXX="g++-4.8 -std=c++11" CC="gcc-4.8"; fi
+- if [ "$CXX" = "g++" ]; then export CXX="g++-4.8 -std=c++11 -pthread" CC="gcc-4.8"; fi
 
 env:
   - BUILD_DIR="."
