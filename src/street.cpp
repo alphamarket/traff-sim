@@ -22,14 +22,14 @@ string street::to_string() const {
 
 string street::status() const {
     stringstream ss;
-    ss  << "[Status]" << endl << this->to_string() << endl
-        << "car#" << this->size() << " last_pos: { "; //<< "m, T:" << this->_tail_last_pos << "m }";
+    ss  << "$ Status: " << this->to_string() << endl
+        << "car#: «" << this->size() << "» last_pos: { ";
 
     FOR(dir, HEAD, TAIL + 1, ++) {
         ss << ::to_string(course(dir)) << "[";
         FOR(line, 0, CONST_STREET_LINES_NO, ++) {
             ss << this->_cars[dir][line].size();
-            if(line < CONST_STREET_LINES_NO - 1) ss << "," << (this->_cars[dir][line].size() ? " " : "");
+            if(line < CONST_STREET_LINES_NO - 1) ss << ",";
         }
         ss << "]" << ": {";
         FOR(line, 0, CONST_STREET_LINES_NO, ++) {
@@ -38,9 +38,10 @@ string street::status() const {
             }
             if(line < CONST_STREET_LINES_NO - 1) ss << "," << (this->_cars[dir][line].size() ? " " : "");
         }
-        ss << "}, ";
+        ss << "}";
+        if(dir < TAIL) ss << ", ";
     }
-    ss << "}";
+    ss << " }";
 
     return ss.str();
 }
@@ -77,7 +78,7 @@ void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
                         default: invalid_course();
                     }
                     if(!_joint) { has_flow[dir] = false; goto __HOLD; }
-                    if(_joint->inBound(c, this)) {
+                    if(_joint->dispatch(c, this)) {
                         way->erase(way->begin() + i--);
                         // pass the car to the bound joint
                         cout<<"Car#: «" << c->getID() <<"» Dir: «" << ::to_string(c->direction()) << "» Line: «"<<c->line()<<"» Speed: «"<<c->speed()<<"» Exiting the: " << this->to_string() << endl;
@@ -125,7 +126,7 @@ joint*& street::joints(course c) {
         default: invalid_course();
     }
 }
-bool joint::inBound(car_ptr c, const street* src) {
+bool joint::dispatch(car_ptr c, const street* src) {
     size_t index = 0;
     vector<pair<size_t, float>> vs;
     float sum1 = 0, sum2 = 0, p = frand();

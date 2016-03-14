@@ -47,7 +47,7 @@ class joint
     vector<course> _end_courses;
     vector<street_ptr> _streets;
 public:
-    bool inBound(car_ptr, const street*);
+    bool dispatch(car_ptr, const street*);
     inline size_t size() const { return this->_streets.size(); }
     inline street_ptr operator[](size_t index) const { return this->_streets[index]; }
     inline void jointStreet(street_ptr s, course c) { s->joints(c) = this; this->_end_courses.push_back(c); this->_streets.push_back(s); }
