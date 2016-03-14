@@ -34,7 +34,7 @@ public:
     inline void line(int l) { this->_line = l; }
     inline int  line() const { return this->_line; }
     inline vector<string> getTour() const { return this->_tour_history; }
-    inline void add2Tour(string flag) { this->_tour_history.push_back(flag + ", LIN: " + std::to_string(this->_line) + ", DIR: " + ::to_string(this->_dir)); }
+    inline void add2Tour(string flag) { this->_tour_history.push_back("«" + flag + "», LIN: «" + std::to_string(this->_line) + "», DIR: «" + ::to_string(this->_dir) + "»"); }
     inline friend ostream& operator <<(ostream& os, const car& c) { os << c.to_string(); return os; }
 };
 

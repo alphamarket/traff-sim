@@ -92,10 +92,10 @@ void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
                         case TAIL: _joint = this->_tail_joint; break;
                         default: invalid_course();
                     }
+                    // pass the car to the bound joint to dispatch!
                     if(_joint && _joint->dispatch(c, this)) {
                         way->erase(way->begin() + i--);
-                        // pass the car to the bound joint
-                        cout<<"Car#: «" << c->getID() <<"» Dir: «" << ::to_string(c->direction()) << "» Line: «"<<c->line()<<"» Speed: «"<<c->max_speed()<<"» Exiting the: " << this->to_string() << endl;
+                        this->fire(street::ON_EXIT, {c.get()});
                     } else { goto __HOLD; }
                     continue;
                 __HOLD:
