@@ -2,14 +2,10 @@
 
 car::car(car_id_t car_id)
     : _line(-1), _pos(-1), _dir(NILL), _max_speed(0), _car_id(car_id)
-{
-
-}
+{ }
 
 car::~car()
-{
-
-}
+{ }
 
 car::car(car&& c)
     : _line(move(c._line)), _pos(move(c._pos)), _dir(move(c._dir)),
