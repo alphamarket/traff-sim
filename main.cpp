@@ -37,7 +37,7 @@ int main(int, char**) {
     j.jointStreet(street_ptr(new street(20, "s2")), TAIL);
     j.jointStreet(street_ptr(new street(20, "s3")), TAIL);
     j.jointStreet(street_ptr(new street(20, "s4")), TAIL);
-    j[3]->traffic_weight() = 2;
+    j.branches().back()->traffic_weight() = 2;
     cout<<"----"<<endl;
     size_t x = 0;
     while(x < j.size()) {
@@ -46,7 +46,7 @@ int main(int, char**) {
             bool hhf, thf;
             j[i]->flow(1, &hhf, &thf);
             if(!(hhf || thf)) x++; else x = 0;
-            cout<<*j[i]<<endl;
+            cout<<*j[i]<<endl<<endl;
         }
     }
     return EXIT_SUCCESS;

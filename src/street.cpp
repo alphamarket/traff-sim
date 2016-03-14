@@ -16,33 +16,50 @@ street::~street()
 
 string street::to_string() const {
     stringstream ss;
-    ss << this->_name << " St. { cap: " << this->_capacity << ", len: " << this->_length << "m, twf: "<<this->_traffic_weight_factor<<" }";
+    json_open_str("Street", 0, ss);
+    json_build_str("Name", this->_name, 1, ss);
+    json_build_str("Length", this->_length, 1, ss);
+    json_build_str("Traff. W. Factor", this->_traffic_weight_factor, 1, ss);
+    json_close_str(0, ss);
     return ss.str();
 }
 
 string street::status() const {
+    int level = 0;
     stringstream ss;
-    ss  << "$ Status: " << this->to_string() << endl
-        << "car#: «" << this->size() << "» last_pos: { ";
+    json_open_str("$ Street", level++, ss);
+    json_build_str("Name", this->_name, level, ss);
+    json_build_str("Length", this->_length, level, ss);
+    json_build_str("Traff. W. Factor", this->_traffic_weight_factor, level, ss);
+    json_open_str("Status", level++, ss);
+    json_build_str("Car#", this->size(), level, ss);
+    json_open_str("Positions", level++, ss);
 
     FOR(dir, HEAD, TAIL + 1, ++) {
-        ss << ::to_string(course(dir)) << "[";
-        FOR(line, 0, CONST_STREET_LINES_NO, ++) {
-            ss << this->_cars[dir][line].size();
-            if(line < CONST_STREET_LINES_NO - 1) ss << ",";
-        }
-        ss << "]" << ": {";
-        FOR(line, 0, CONST_STREET_LINES_NO, ++) {
-            if(this->_cars[dir][line].size()) {
-                ss << this->_cars[dir][line].back()->position();
+        string buf;
+        {
+            stringstream ss;
+            ss << "[";
+            FOR(line, 0, CONST_STREET_LINES_NO, ++) {
+                ss << this->_cars[dir][line].size();
+                if(line < CONST_STREET_LINES_NO - 1) ss << ",";
             }
-            if(line < CONST_STREET_LINES_NO - 1) ss << "," << (this->_cars[dir][line].size() ? " " : "");
+            ss << "]" << ": { ";
+            FOR(line, 0, CONST_STREET_LINES_NO, ++) {
+                if(this->_cars[dir][line].size()) {
+                    ss << this->_cars[dir][line].back()->position();
+                }
+                if(line < CONST_STREET_LINES_NO - 1) ss << " , ";// << (this->_cars[dir][line].size() ? " " : " ");
+            }
+            ss << " }";
+            buf = ss.str();
         }
-        ss << "}";
-        if(dir < TAIL) ss << ", ";
+        json_build_str(::to_string(course(dir)), buf, level, ss, false);
     }
-    ss << " }";
-
+    json_close_str(--level, ss);
+    json_close_str(--level, ss);
+    json_close_str(--level, ss);
+    assert(level == 0);
     return ss.str();
 }
 
@@ -59,8 +76,6 @@ size_t street::size(course c) const {
 }
 
 void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
-    int  overflow[2/* [HEAD, TAIL] */] = {0, 0};
-    bool has_flow[2/* [HEAD, TAIL] */] = {true, true};
     FOR(dir, HEAD, TAIL + 1, ++) {
         FOR(line, 0, CONST_STREET_LINES_NO, ++) {
             auto way = &this->_cars[dir][line];
@@ -77,8 +92,7 @@ void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
                         case TAIL: _joint = this->_tail_joint; break;
                         default: invalid_course();
                     }
-                    if(!_joint) { has_flow[dir] = false; goto __HOLD; }
-                    if(_joint->dispatch(c, this)) {
+                    if(_joint && _joint->dispatch(c, this)) {
                         way->erase(way->begin() + i--);
                         // pass the car to the bound joint
                         cout<<"Car#: «" << c->getID() <<"» Dir: «" << ::to_string(c->direction()) << "» Line: «"<<c->line()<<"» Speed: «"<<c->speed()<<"» Exiting the: " << this->to_string() << endl;
@@ -89,13 +103,21 @@ void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
                     if(i > 0 && _position >= way->at(i-1)->position() - way->at(i-1)->getLong())
                         _position = way->at(i-1)->position() - 0.1 /* 0.1m */ - way->at(i-1)->getLong();
                     c->position(_position);
-                    overflow[dir]++;
                 } else c->position(_position);
             }
         }
     }
-    if(head_has_flow) *head_has_flow = this->size(HEAD) && has_flow[HEAD] && overflow[HEAD] == 0;
-    if(tail_has_flow) *tail_has_flow = this->size(TAIL) && has_flow[TAIL] && overflow[TAIL] == 0;
+    this->has_flow(head_has_flow, tail_has_flow);
+}
+
+void street::has_flow(bool* head_has_flow, bool* tail_has_flow) const {
+    bool has_flow[2/* [HEAD, TAIL] */] = {false, false};
+    FOR(dir, HEAD, TAIL + 1, ++)
+        FOR(line, 0, CONST_STREET_LINES_NO, ++)
+            has_flow[dir] = has_flow[dir] ||
+                            (this->_cars[dir][line].size() && this->_cars[dir][line].front()->position() < this->_length);
+    if(head_has_flow) *head_has_flow = has_flow[HEAD] ;
+    if(tail_has_flow) *tail_has_flow = has_flow[TAIL] ;
 }
 
 bool street::inBoundCar(car_ptr c, course from) {
@@ -130,7 +152,7 @@ bool joint::dispatch(car_ptr c, const street* src) {
     size_t index = 0;
     vector<pair<size_t, float>> vs;
     float sum1 = 0, sum2 = 0, p = frand();
-    for(street_ptr& s : this->_streets) {
+    for(street_ptr& s : this->_branches) {
         if(s.get() == src) vs.push_back(make_pair<size_t, float>(index++, 0));
         else vs.push_back(make_pair<size_t, float>(index++, exp(s->traffic_weight())));
         sum1 += vs.back().second;
@@ -138,7 +160,7 @@ bool joint::dispatch(car_ptr c, const street* src) {
     sort(vs.begin(), vs.end(), [](pair<size_t, float> p1, pair<size_t, float> p2){ return p1.second < p2.second; });
     for(pair<size_t, float>& f : vs) {
         sum2 += (f.second / sum1);
-        if(sum2 > p) return ((street_ptr)this->_streets[f.first])->inBoundCar(c, this->_end_courses[f.first]);
+        if(sum2 > p) return ((street_ptr)this->_branches[f.first])->inBoundCar(c, this->_end_courses[f.first]);
     }
     return false;
 }

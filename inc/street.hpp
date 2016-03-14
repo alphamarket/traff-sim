@@ -28,12 +28,13 @@ public:
     ~street();
     street(size_t, string = "?");
 
-    void flow(float = 1, bool* = nullptr, bool* = nullptr);
     string status() const;
     joint*& joints(course);
     string to_string() const;
-    bool inBoundCar(car_ptr, course);
     size_t size(course c) const;
+    bool inBoundCar(car_ptr, course);
+    void has_flow(bool* = nullptr, bool* = nullptr) const;
+    void flow(float = 1, bool* = nullptr, bool* = nullptr);
 
     inline string name() const { return this->_name; }
     inline float& traffic_weight() { return this->_traffic_weight_factor; }
@@ -45,12 +46,13 @@ public:
 class joint
 {
     vector<course> _end_courses;
-    vector<street_ptr> _streets;
+    vector<street_ptr> _branches;
 public:
     bool dispatch(car_ptr, const street*);
-    inline size_t size() const { return this->_streets.size(); }
-    inline street_ptr operator[](size_t index) const { return this->_streets[index]; }
-    inline void jointStreet(street_ptr s, course c) { s->joints(c) = this; this->_end_courses.push_back(c); this->_streets.push_back(s); }
+    inline size_t size() const { return this->_branches.size(); }
+    inline street_ptr operator[](size_t index) const { return this->_branches[index]; }
+    inline vector<street_ptr>& branches() { return this->_branches; }
+    inline void jointStreet(street_ptr s, course c) { s->joints(c) = this; this->_end_courses.push_back(c); this->_branches.push_back(s); }
 };
 
 
