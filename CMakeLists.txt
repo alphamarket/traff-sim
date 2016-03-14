@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -pthread")
 
-project(QUADROTO_SIM)
+project(TRAFFIC_SIM)
 
 file(GLOB_RECURSE ISOURCES "src/*.cpp")
 file(GLOB_RECURSE IHEADER "inc/*.hpp" "inc/*.h")
