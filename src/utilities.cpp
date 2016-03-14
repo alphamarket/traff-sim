@@ -1,5 +1,8 @@
 #include "inc/utilities.hpp"
 
+/**
+ * @brief to_string convert a course to string
+ */
 string to_string(course d) {
     switch(d) {
         case NILL: return "NILL";
@@ -12,7 +15,10 @@ string to_string(course d) {
         default: invalid_course();
     }
 }
-
+/**
+ * @brief inverse_course get the inverse course
+ * @param d the course to get it's inverse
+ */
 course inverse_course(course d) {
     switch(d) {
         case NILL: return NILL;

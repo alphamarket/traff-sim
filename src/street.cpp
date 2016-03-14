@@ -95,9 +95,10 @@ void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
                         default: invalid_course();
                     }
                     // pass the car to the bound joint to dispatch!
-                    if(_joint && _joint->dispatch(c, this)) {
+                    street* t = nullptr;
+                    if(_joint && (t = _joint->dispatch(c, this))) {
                         way->erase(way->begin() + i--);
-                        this->fire(street::ON_EXIT, {c.get()});
+                        this->fire(street::ON_EXIT, {c.get(), this, t});
                     } else { goto __HOLD; }
                     continue;
                 __HOLD:
@@ -122,7 +123,7 @@ void street::has_flow(bool* head_has_flow, bool* tail_has_flow) const {
     if(tail_has_flow) *tail_has_flow = has_flow[TAIL] ;
 }
 
-bool street::inBoundCar(car_ptr c, course from) {
+bool street::bound_car(car_ptr c, course from) {
     int line = -1;
     course dir = c->direction();
     if(from == dir) dir = inverse_course(dir);

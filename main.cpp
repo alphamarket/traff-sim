@@ -20,7 +20,7 @@ int main(int, char**) {
     FOR(i,0,4,++) {
         car_ptr c(new car("C-"+to_string(i)));
         c->direction(i < 2 ? HEAD : TAIL);
-        assert(s0->inBoundCar(c, (i < 2 ? TAIL : HEAD)));
+        assert(s0->bound_car(c, (i < 2 ? TAIL : HEAD)));
         c->max_speed(4.8);
         cout<<"CAR "<<*c<<endl;
     }
@@ -28,21 +28,26 @@ int main(int, char**) {
     FOR(i,4,8,++) {
         car_ptr c(new car("C-"+to_string(i)));
         c->direction(i < 6 ? HEAD : TAIL);
-        assert(s0->inBoundCar(c, (i < 6 ? TAIL : HEAD)));
+        assert(s0->bound_car(c, (i < 6 ? TAIL : HEAD)));
         c->max_speed(20);
         cout<<"CAR "<<*c<<endl;
     }
     joint j;
-    j.jointStreet(s0, HEAD);
-    j.jointStreet(s0, TAIL);
-    j.jointStreet(street_ptr(new street(20, "s2")), TAIL);
-    j.jointStreet(street_ptr(new street(20, "s3")), TAIL);
-    j.jointStreet(street_ptr(new street(20, "s4")), TAIL);
+    j.add_branch()
+        (s0, HEAD)
+        (s0, TAIL)
+        (street_ptr(new street(20, "s2")), TAIL)
+        (street_ptr(new street(20, "s3")), TAIL)
+        (street_ptr(new street(20, "s4")), TAIL);
     j.dispatch_event(street::ON_EXIT, [](vector<const void*> args) {
-        const car* c = reinterpret_cast<const car*>(args.front());
-        cout<<"Car#: «" << c->getID() <<"» Dir: «" << ::to_string(c->direction()) << "» Line: «"<<c->line()<<"» Speed: «"<<c->max_speed()<<"» Exiting the: " << c->getTour().back() << endl;
+        assert(args.size() == 3);
+        const car* c = reinterpret_cast<const car*>(args[0]);
+        const street
+            *s = reinterpret_cast<const street*>(args[1]),
+            *t = reinterpret_cast<const street*>(args[2]);
+        cout<<"$ Car# «" << c->getID() <<"» going to «" << ::to_string(c->direction()) << "» with max speed of «"<<c->max_speed()<<" m/s» exited from «" << s->name() << " @ " << c->line() << "» to «" <<  t->name() << "»" << endl;
     });
-    j.branches().back()->traffic_weight() = 2;
+    j.branches().back()->traffic_weight(2);
     cout<<"----"<<endl;
     size_t x = 0;
     cout<<j;

@@ -7,14 +7,14 @@
 
 typedef int event;
 typedef const void* event_callback_arg;
-typedef std::function<void(vector<event_callback_arg>)> event_callback;
+typedef std::function<void(vector<event_callback_arg>)> event_handler;
 
 class base_event
 {
     /**
      * @brief _events the event container box
      */
-    unordered_map<event, vector<event_callback>> _events;
+    unordered_map<event, vector<event_handler>> _events;
 protected:
     /**
      * @brief fire fires every event registered with the event-id
@@ -32,7 +32,7 @@ public:
      * @param callback the handler
      * @return current instance
      */
-    base_event& operator()(event id, event_callback callback);
+    base_event& operator()(event id, event_handler callback);
     /**
      * @brief add_event and interface to add event
      * @return current instance
