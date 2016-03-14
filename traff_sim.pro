@@ -10,11 +10,12 @@ LIBS += -lpthread
 INCLUDEPATH += . test/hpp
 
 SOURCES += \
-    main.cpp \
+#    main.cpp \
+    test/testerMain.cpp\
+    \
     src/street.cpp \
     src/car.cpp \
     src/utilities.cpp \
-#    test/testerMain.cpp
     src/base_event.cpp \
     src/joint.cpp
 
@@ -26,4 +27,5 @@ HEADERS += \
     test/manifest.hpp \
     test/TestCases/basic/carTestCase.hpp \
     inc/base_event.hpp \
-    inc/joint.hpp
+    inc/joint.hpp \
+    test/TestCases/basic/streetTestCase.hpp

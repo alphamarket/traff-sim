@@ -44,6 +44,10 @@ public:
      */
     inline street_ptr operator[](size_t index) const { return this->_branches[index]; }
     /**
+     * @brief operator << ostream operator
+     */
+    inline friend ostream& operator <<(ostream& os, const joint& j) { FOR(i,0,j.size(),++) os<<*j[i]<<endl; return os; }
+    /**
      * @brief operator () join a street as a branch to current joint
      * @param s the street
      * @param c the end-point of street which will going to attach to current joint
@@ -55,11 +59,7 @@ public:
      * @param id the event id
      * @param callback the event handler
      */
-    inline void dispatch_event(event id, event_handler callback) { FOR(i,0,this->_branches.size(),++) ((street_ptr)this->_branches[i])->add_event() (id, callback); }
-    /**
-     * @brief operator << ostream operator
-     */
-    inline friend ostream& operator <<(ostream& os, const joint& j) { FOR(i,0,j.size(),++) os<<*j[i]<<endl; return os; }
+    inline void dispatch_event(event id, event_handler callback) { FOR(i,0,this->_branches.size(),++) ((street_ptr)this->_branches[i])->event_add() (id, callback); }
 };
 
 #endif // JOINT_H

@@ -47,7 +47,7 @@ public:
      * @brief the event flags of current entity
      */
     typedef enum event_flags {
-        AFTER_EXIT
+        AFTER_EXIT, ON_TRAFFIC_HOLD
     } event_flags;
 public:
     ~street();
@@ -88,6 +88,14 @@ public:
      */
     inline string name() const { return this->_name; }
     /**
+     * @brief length get length of the street in meter
+     */
+    inline float length() const { return this->_length; }
+    /**
+     * @brief capacity get car capacity of the street in car#
+     */
+    inline size_t capacity() const { return this->_capacity; }
+    /**
      * @brief size get the total # of cars inbound to current street
      */
     inline size_t size() const { return this->size(HEAD) + this->size(TAIL); }
@@ -104,18 +112,27 @@ public:
      * @param head_has_flow [OUT] for head direction flowness
      * @param tail_has_flow [OUT] for tail direction flowness
      */
-    void has_flow(bool* head_has_flow = nullptr, bool* tail_has_flow = nullptr) const;
+    void is_road_block(bool* head_has_flow = nullptr, bool* tail_has_flow = nullptr) const;
     /**
      * @brief flow make a flow step in the street
      * @param dt the time step in second
      * @param head_has_flow [OUT] for head direction flowness
      * @param tail_has_flow [OUT] for tail direction flowness
+     * @event ON_TRAFFIC_HOLD(car* the_car, street* current_street)
+     * @event AFTER_EXIT(car* the_car, street* old_street, street* target_street)
      */
     void flow(float dt = 1, bool* head_has_flow = nullptr, bool* tail_has_flow = nullptr);
     /**
      * @brief operator << the ostreat operator
      */
     inline friend ostream& operator <<(ostream& os, const street& s) { os << s.status(); return os; }
+    /**
+     * @brief operator () get vector of cars
+     * @param c the target course
+     * @param line the target line in the course
+     */
+    inline vector<car_ptr> operator ()(course c, size_t line) const
+    { switch(c) { case HEAD: case TAIL: if(line >= CONST_STREET_LINES_NO) throw runtime_error("line# overflow!"); return this->_cars[c][line]; default: invalid_course(); } }
 };
 
 typedef shared_ptr<street> street_ptr;

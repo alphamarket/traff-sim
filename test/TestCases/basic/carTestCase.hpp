@@ -1,5 +1,5 @@
-#ifndef MAPPERTESTCASE_HPP
-#define MAPPERTESTCASE_HPP
+#ifndef CARTESTCASE_HPP
+#define CARTESTCASE_HPP
 
 #include "testCase.hpp"
 #include "teststrap.hpp"

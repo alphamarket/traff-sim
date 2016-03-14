@@ -78,6 +78,7 @@ size_t street::size(course c) const {
 }
 
 void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
+    bool has_flow[2 /* [HEAD,TAIL] */] = { false, false };
     // foreach direction
     FOR(dir, HEAD, TAIL + 1, ++) {
         // foreach line in directions
@@ -87,6 +88,8 @@ void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
             // foreach car in current direction/line
             FOR(i, 0, way->size(), ++) {
                 car_ptr c = way->at(i);
+                // the on hold flag
+                bool _on_hold = false;
                 // fail-check
                 assert(c->direction() == dir);
                 // check the next position the car will be if it's going with its max speed
@@ -111,27 +114,35 @@ void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
                         // the car successfully dispatched and need to dismissed from current instance's inbound cars
                         way->erase(way->begin() + i--);
                         // fire the exit event
-                        this->fire(street::AFTER_EXIT, {c.get(), this, t});
+                        this->event_fire(street::AFTER_EXIT, {c.get(), this, t});
                     }
                     // if no joint or a failed dispatch?
-                    else { goto __HOLD; }
+                    else {
+                        // fire the on traffic hold
+                        this->event_fire(street::ON_TRAFFIC_HOLD, {c.get(), this});
+                        // initiate the car hold procedure
+                        goto __HOLD;
+                    }
                     continue;
                 __HOLD:
+                    _on_hold = true;
                     // stop the car at nearest possible place to the joint
                     _position = this->_length;
                     if(i > 0 && _position >= way->at(i-1)->position() - way->at(i-1)->getLong())
                         _position = way->at(i-1)->position() - 0.1 /* 0.1m */ - way->at(i-1)->getLong();
                 }
+                has_flow[dir] = has_flow[dir] || (!_on_hold && c->position() != _position);
                 // update the position of car
                 c->position(_position);
             }
         }
     }
     // return the flowness flag of directions
-    this->has_flow(head_has_flow, tail_has_flow);
+    if(head_has_flow) *head_has_flow = has_flow[HEAD];
+    if(tail_has_flow) *tail_has_flow = has_flow[TAIL];
 }
 
-void street::has_flow(bool* head_has_flow, bool* tail_has_flow) const {
+void street::is_road_block(bool* head_has_flow, bool* tail_has_flow) const {
     if(!head_has_flow && tail_has_flow) return;
     bool has_flow[2/* [HEAD, TAIL] */] = {false, false};
     FOR(dir, HEAD, TAIL + 1, ++)
@@ -168,6 +179,8 @@ bool street::bound_car(car_ptr c, course from) {
     c->direction(dir);
     // make an impact on the car's tour history
     c->add2Tour(this->_name);
+    // validate direction
+    if(c->direction() != HEAD && c->direction() != TAIL) invalid_course();
     // accept the car
     this->_cars[c->direction()][c->line()].push_back(c);
     // flag the successfull adaption

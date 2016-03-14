@@ -22,7 +22,7 @@ protected:
      * @param args the agument which will passed to event handlers
      * @param async should the event calls processed async. from current thread?
      */
-    void fire(event id, const vector<event_callback_arg> args, bool async = false) const;
+    void event_fire(event id, const vector<event_callback_arg> args, bool async = false) const;
 public:
     base_event();
     ~base_event();
@@ -37,12 +37,17 @@ public:
      * @brief add_event and interface to add event
      * @return current instance
      */
-    inline base_event& add_event() { return *this; }
+    inline base_event& event_add() { return *this; }
     /**
      * @brief remove_event removes all handlers assigned to an event
      * @param id the event id
      */
-    inline void remove_event(event id) { this->_events.erase(id); }
+    inline void event_remove(event id) { this->_events.erase(id); }
+    /**
+     * @brief event_exists check if an event already registered
+     * @param id the event's id
+     */
+    inline bool event_has_defined(event id) const { return this->_events.count(id); }
 };
 
 #endif // BASE_EVENT_H
