@@ -4,7 +4,8 @@
 TEMPLATE = app
 TARGET = traff_sim
 CONFIG += c++11
-LIBS += -lpthread 
+DEFINES += QTCTREATOR
+LIBS += -lpthread
 
 INCLUDEPATH += .
 

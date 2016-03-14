@@ -6,7 +6,7 @@
 street::street(size_t car_capacity, string name)
     : _name(name), _length(car_capacity * CONST_AVG_CAR_LONG), _capacity(car_capacity),
       _head_joint(nullptr), _tail_joint(nullptr),
-      _traffic_weight(1)
+      _traffic_weight_factor(1)
 {
 }
 
@@ -16,7 +16,7 @@ street::~street()
 
 string street::to_string() const {
     stringstream ss;
-    ss << this->_name << " St. { cap#: " << this->_capacity << ", len: " << this->_length << "m }";
+    ss << this->_name << " St. { cap: " << this->_capacity << ", len: " << this->_length << "m, twf: "<<this->_traffic_weight_factor<<" }";
     return ss.str();
 }
 
@@ -26,12 +26,17 @@ string street::status() const {
         << "car#" << this->size() << " last_pos: { "; //<< "m, T:" << this->_tail_last_pos << "m }";
 
     FOR(dir, HEAD, TAIL + 1, ++) {
-        ss << ::to_string(course(dir)) << ": {";
+        ss << ::to_string(course(dir)) << "[";
+        FOR(line, 0, CONST_STREET_LINES_NO, ++) {
+            ss << this->_cars[dir][line].size();
+            if(line < CONST_STREET_LINES_NO - 1) ss << "," << (this->_cars[dir][line].size() ? " " : "");
+        }
+        ss << "]" << ": {";
         FOR(line, 0, CONST_STREET_LINES_NO, ++) {
             if(this->_cars[dir][line].size()) {
                 ss << this->_cars[dir][line].back()->position();
-                if(line < CONST_STREET_LINES_NO - 1) ss << ", ";
             }
+            if(line < CONST_STREET_LINES_NO - 1) ss << "," << (this->_cars[dir][line].size() ? " " : "");
         }
         ss << "}, ";
     }
@@ -52,48 +57,63 @@ size_t street::size(course c) const {
     }
 }
 
-bool street::flow() {
-    int has_flow = 2;
+void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
+    int  overflow[2/* [HEAD, TAIL] */] = {0, 0};
+    bool has_flow[2/* [HEAD, TAIL] */] = {true, true};
     FOR(dir, HEAD, TAIL + 1, ++) {
         FOR(line, 0, CONST_STREET_LINES_NO, ++) {
             auto way = &this->_cars[dir][line];
-            FOR(i, 0, way->size(),++) {
+            FOR(i, 0, way->size(), ++) {
                 car_ptr c = way->at(i);
-                // move as you can!!
-                if(i > 0 && c->position() + c->speed() >= way->at(i-1)->position())
-                    c->position() = way->at(i-1)->position() - 0.1 /* 0.1m */;
-                else c->position() += c->speed();
-                if(c->position() + c->getLong() / 2 > this->_length) {
+                assert(c->direction() == dir);
+                float _position = c->position() + c->speed() * dt;
+                if(i > 0 && _position >= way->at(i-1)->position() - way->at(i-1)->getLong())
+                    _position = way->at(i-1)->position() - 0.1 /* 0.1m */ - way->at(i-1)->getLong() /* 0.1m */;
+                if(_position > this->_length) {
                     joint* _joint = nullptr;
                     switch(c->direction()) {
                         case HEAD: _joint = this->_head_joint; break;
                         case TAIL: _joint = this->_tail_joint; break;
                         default: invalid_course();
                     }
-                    if(_joint && this->_head_joint->inBound(c, this)) {
+                    if(!_joint) { has_flow[dir] = false; goto __HOLD; }
+                    if(_joint->inBound(c, this)) {
                         way->erase(way->begin() + i--);
                         // pass the car to the bound joint
-                        cout<<"Car#: «" << c->getID() <<"» Dir: «" << ::to_string(c->direction()) << "» Line: «"<<c->line()<<"» Exiting the: " << this->to_string() << endl;
-                    } else { has_flow--; line = CONST_STREET_LINES_NO; break; }
-                }
+                        cout<<"Car#: «" << c->getID() <<"» Dir: «" << ::to_string(c->direction()) << "» Line: «"<<c->line()<<"» Speed: «"<<c->speed()<<"» Exiting the: " << this->to_string() << endl;
+                    } else { goto __HOLD; }
+                    continue;
+                __HOLD:
+                    _position = this->_length;
+                    if(i > 0 && _position >= way->at(i-1)->position() - way->at(i-1)->getLong())
+                        _position = way->at(i-1)->position() - 0.1 /* 0.1m */ - way->at(i-1)->getLong();
+                    c->position(_position);
+                    overflow[dir]++;
+                } else c->position(_position);
             }
         }
     }
-    return has_flow;
+    if(head_has_flow) *head_has_flow = this->size(HEAD) && has_flow[HEAD] && overflow[HEAD] == 0;
+    if(tail_has_flow) *tail_has_flow = this->size(TAIL) && has_flow[TAIL] && overflow[TAIL] == 0;
 }
 
-bool street::inBoundCar(car_ptr c) {
-    c->line() = -1;
+bool street::inBoundCar(car_ptr c, course from) {
+    int line = -1;
+    course dir = c->direction();
+    if(from == dir) dir = inverse_course(dir);
     // cars which goes to head should enter from tail!
-    FOR(line, 0, CONST_STREET_LINES_NO, ++) {
-        if( this->_cars[c->direction()][line].size() < this->_capacity &&
-            (this->_cars[c->direction()][line].empty() || this->_cars[c->direction()][line].back()->position() > c->getLong() / 2)) {
-            c->line() = line;
+    FOR(_line, 0, CONST_STREET_LINES_NO, ++) {
+        if( this->_cars[dir][_line].size() < this->_capacity &&
+            (this->_cars[dir][_line].empty() || this->_cars[dir][_line].back()->position() > c->getLong() / 2)) {
+            line = _line;
             break;
         }
     }
-    if(c->line() == -1) return false;
-    c->position() = 0;
+    if(line == -1) return false;
+    c->line(line);
+    c->position(0);
+    c->direction(dir);
+    c->add2Tour(this->_name);
     this->_cars[c->direction()][c->line()].push_back(c);
     return true;
 }
@@ -117,7 +137,7 @@ bool joint::inBound(car_ptr c, const street* src) {
     sort(vs.begin(), vs.end(), [](pair<size_t, float> p1, pair<size_t, float> p2){ return p1.second < p2.second; });
     for(pair<size_t, float>& f : vs) {
         sum2 += (f.second / sum1);
-        if(sum2 > p) return ((street_ptr)this->_streets[f.first])->inBoundCar(c);
+        if(sum2 > p) return ((street_ptr)this->_streets[f.first])->inBoundCar(c, this->_end_courses[f.first]);
     }
     return false;
 }

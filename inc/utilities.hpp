@@ -10,6 +10,7 @@ typedef enum course {
 } course;
 
 string to_string(course);
+course inverse_course(course);
 
 #define invalid_course() throw runtime_error("invalid course!")
 
