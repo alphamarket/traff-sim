@@ -22,5 +22,4 @@ public:
     inline void remove_event(event name) { this->_events.erase(name); }
 };
 
-
 #endif // BASE_EVENT_H

@@ -1,6 +1,7 @@
 #include "inc/stdafx.hpp"
 #include <thread>
 
+#include "inc/joint.hpp"
 #include "inc/street.hpp"
 
 int main(int, char**) {
