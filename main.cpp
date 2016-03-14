@@ -20,7 +20,7 @@ int main(int, char**) {
         car_ptr c(new car("C-"+to_string(i)));
         c->direction(i < 2 ? HEAD : TAIL);
         assert(s0->inBoundCar(c, (i < 2 ? TAIL : HEAD)));
-        c->speed(4.8);
+        c->max_speed(4.8);
         cout<<"CAR "<<*c<<endl;
     }
     FOR(i,0,5,++) { s0->flow(); cout<<*s0<<endl<<endl; }
@@ -28,7 +28,7 @@ int main(int, char**) {
         car_ptr c(new car("C-"+to_string(i)));
         c->direction(i < 6 ? HEAD : TAIL);
         assert(s0->inBoundCar(c, (i < 6 ? TAIL : HEAD)));
-        c->speed(20);
+        c->max_speed(20);
         cout<<"CAR "<<*c<<endl;
     }
     joint j;

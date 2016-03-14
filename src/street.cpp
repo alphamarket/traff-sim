@@ -82,7 +82,7 @@ void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
             FOR(i, 0, way->size(), ++) {
                 car_ptr c = way->at(i);
                 assert(c->direction() == dir);
-                float _position = c->position() + c->speed() * dt;
+                float _position = c->position() + c->max_speed() * dt;
                 if(i > 0 && _position >= way->at(i-1)->position() - way->at(i-1)->getLong())
                     _position = way->at(i-1)->position() - 0.1 /* 0.1m */ - way->at(i-1)->getLong() /* 0.1m */;
                 if(_position > this->_length) {
@@ -95,7 +95,7 @@ void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
                     if(_joint && _joint->dispatch(c, this)) {
                         way->erase(way->begin() + i--);
                         // pass the car to the bound joint
-                        cout<<"Car#: «" << c->getID() <<"» Dir: «" << ::to_string(c->direction()) << "» Line: «"<<c->line()<<"» Speed: «"<<c->speed()<<"» Exiting the: " << this->to_string() << endl;
+                        cout<<"Car#: «" << c->getID() <<"» Dir: «" << ::to_string(c->direction()) << "» Line: «"<<c->line()<<"» Speed: «"<<c->max_speed()<<"» Exiting the: " << this->to_string() << endl;
                     } else { goto __HOLD; }
                     continue;
                 __HOLD:

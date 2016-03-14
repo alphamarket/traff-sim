@@ -10,10 +10,11 @@ LIBS += -lpthread
 INCLUDEPATH += . test/hpp
 
 SOURCES += \
-    main.cpp \
+#    main.cpp \
     src/street.cpp \
     src/car.cpp \
-    src/utilities.cpp
+    src/utilities.cpp \
+    test/testerMain.cpp
 
 HEADERS += \
     inc/stdafx.hpp \
