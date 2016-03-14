@@ -47,7 +47,7 @@ public:
      * @brief the event flags of current entity
      */
     typedef enum event_flags {
-        ON_EXIT
+        AFTER_EXIT
     } event_flags;
 public:
     ~street();

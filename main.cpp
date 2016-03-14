@@ -39,7 +39,7 @@ int main(int, char**) {
         (street_ptr(new street(20, "s2")), TAIL)
         (street_ptr(new street(20, "s3")), TAIL)
         (street_ptr(new street(20, "s4")), TAIL);
-    j.dispatch_event(street::ON_EXIT, [](vector<const void*> args) {
+    j.dispatch_event(street::AFTER_EXIT, [](vector<const void*> args) {
         assert(args.size() == 3);
         const car* c = reinterpret_cast<const car*>(args[0]);
         const street

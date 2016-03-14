@@ -78,42 +78,61 @@ size_t street::size(course c) const {
 }
 
 void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
+    // foreach direction
     FOR(dir, HEAD, TAIL + 1, ++) {
+        // foreach line in directions
         FOR(line, 0, CONST_STREET_LINES_NO, ++) {
+            // fetch a line's car
             auto way = &this->_cars[dir][line];
+            // foreach car in current direction/line
             FOR(i, 0, way->size(), ++) {
                 car_ptr c = way->at(i);
+                // fail-check
                 assert(c->direction() == dir);
+                // check the next position the car will be if it's going with its max speed
                 float _position = c->position() + c->max_speed() * dt;
+                // if the max speed will create an accident with the front car
                 if(i > 0 && _position >= way->at(i-1)->position() - way->at(i-1)->getLong())
+                    // go as you can -- stop 10 centimeter apart from front car's back
                     _position = way->at(i-1)->position() - 0.1 /* 0.1m */ - way->at(i-1)->getLong() /* 0.1m */;
+                // if the car reached end of street(aka. reach to an end-joint)
                 if(_position > this->_length) {
                     joint* _joint = nullptr;
+                    // fetch the related end-joint
                     switch(c->direction()) {
                         case HEAD: _joint = this->_head_joint; break;
                         case TAIL: _joint = this->_tail_joint; break;
                         default: invalid_course();
                     }
-                    // pass the car to the bound joint to dispatch!
+                    // the next choosen street
                     street* t = nullptr;
+                    // try to choose a route from bounded branches to the joint!
                     if(_joint && (t = _joint->dispatch(c, this))) {
+                        // the car successfully dispatched and need to dismissed from current instance's inbound cars
                         way->erase(way->begin() + i--);
-                        this->fire(street::ON_EXIT, {c.get(), this, t});
-                    } else { goto __HOLD; }
+                        // fire the exit event
+                        this->fire(street::AFTER_EXIT, {c.get(), this, t});
+                    }
+                    // if no joint or a failed dispatch?
+                    else { goto __HOLD; }
                     continue;
                 __HOLD:
+                    // stop the car at nearest possible place to the joint
                     _position = this->_length;
                     if(i > 0 && _position >= way->at(i-1)->position() - way->at(i-1)->getLong())
                         _position = way->at(i-1)->position() - 0.1 /* 0.1m */ - way->at(i-1)->getLong();
-                    c->position(_position);
-                } else c->position(_position);
+                }
+                // update the position of car
+                c->position(_position);
             }
         }
     }
+    // return the flowness flag of directions
     this->has_flow(head_has_flow, tail_has_flow);
 }
 
 void street::has_flow(bool* head_has_flow, bool* tail_has_flow) const {
+    if(!head_has_flow && tail_has_flow) return;
     bool has_flow[2/* [HEAD, TAIL] */] = {false, false};
     FOR(dir, HEAD, TAIL + 1, ++)
         FOR(line, 0, CONST_STREET_LINES_NO, ++)
@@ -124,23 +143,34 @@ void street::has_flow(bool* head_has_flow, bool* tail_has_flow) const {
 }
 
 bool street::bound_car(car_ptr c, course from) {
+    // unknown line
     int line = -1;
+    // current direction of car
     course dir = c->direction();
+    // cars which enter from a direction should go to the opposite direction!
     if(from == dir) dir = inverse_course(dir);
-    // cars which goes to head should enter from tail!
+    // for each line in current direction
     FOR(_line, 0, CONST_STREET_LINES_NO, ++) {
+        // if the capacity not reached
         if( this->_cars[dir][_line].size() < this->_capacity &&
+        // if there is place to enter the street
             (this->_cars[dir][_line].empty() || this->_cars[dir][_line].back()->position() > c->getLong() / 2)) {
+            // pick the line
             line = _line;
             break;
         }
     }
+    // if the line still unkown? no room to enter!!
     if(line == -1) return false;
+    // adapt the current street's situation
     c->line(line);
     c->position(0);
     c->direction(dir);
+    // make an impact on the car's tour history
     c->add2Tour(this->_name);
+    // accept the car
     this->_cars[c->direction()][c->line()].push_back(c);
+    // flag the successfull adaption
     return true;
 }
 
