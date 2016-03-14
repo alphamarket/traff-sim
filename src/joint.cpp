@@ -1,7 +1,7 @@
 #include "inc/joint.hpp"
 #include <algorithm>
 
-street* joint::dispatch(car_ptr c, const street* src) {
+street* joint::dispatch_car(car_ptr c, const street* src) {
     // using softmax for computing the probability and roulette wheel to select a route
     size_t index = 0;
     vector<pair<size_t, float>> vs;

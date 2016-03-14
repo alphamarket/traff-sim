@@ -28,4 +28,5 @@ HEADERS += \
     test/TestCases/basic/carTestCase.hpp \
     inc/base_event.hpp \
     inc/joint.hpp \
-    test/TestCases/basic/streetTestCase.hpp
+    test/TestCases/basic/streetTestCase.hpp \
+    test/TestCases/basic/jointTestCase.hpp \

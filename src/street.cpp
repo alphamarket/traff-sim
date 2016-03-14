@@ -110,7 +110,7 @@ void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
                     // the next choosen street
                     street* t = nullptr;
                     // try to choose a route from bounded branches to the joint!
-                    if(_joint && (t = _joint->dispatch(c, this))) {
+                    if(_joint && (t = _joint->dispatch_car(c, this))) {
                         // the car successfully dispatched and need to dismissed from current instance's inbound cars
                         way->erase(way->begin() + i--);
                         // fire the exit event

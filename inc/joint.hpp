@@ -28,7 +28,7 @@ public:
      * @param src the source street that car's coming from
      * @return true if dispatch was successful and the car placed in a street inbound to current joint; otherwise false
      */
-    street* dispatch(car_ptr c, const street* src);
+    street* dispatch_car(car_ptr c, const street* src);
     /**
      * @brief size get the number of inbound branches
      */

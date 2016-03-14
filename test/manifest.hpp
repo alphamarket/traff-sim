@@ -6,6 +6,7 @@
  * Include test case files
  */
 #include "TestCases/basic/carTestCase.hpp"
+#include "TestCases/basic/jointTestCase.hpp"
 #include "TestCases/basic/streetTestCase.hpp"
 namespace CPP_TESTER {
     /**
@@ -15,6 +16,7 @@ namespace CPP_TESTER {
         /* example */
         registery::__register("[BASIC] Car Test",   new TESTS::BASIC::carTestCase());
         registery::__register("[BASIC] Street Test",new TESTS::BASIC::streetTestCase());
+        registery::__register("[BASIC] Joint Test",new TESTS::BASIC::jointTestCase());
     }
 }
 #endif	/* MANIFEST_HPP */
