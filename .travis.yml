@@ -1,0 +1,36 @@
+language: cpp
+
+compiler:
+  - g++
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    - boost-latest
+    packages:
+    - gcc-4.8
+    - g++-4.8
+    - libboost1.55-all-dev
+    - cmake
+
+install:
+- if [ "$CXX" = "g++" ]; then export CXX="g++-4.8 -std=c++11" CC="gcc-4.8"; fi
+
+env:
+  - BUILD_DIR="."
+  - BUILD_DIR="test"
+
+before_script:
+  - cd $BUILD_DIR
+  - mkdir build
+  - cd build
+  - cmake ..
+
+script:
+  - make
+  - if [ -e "test" ]; then ./test; fi
+
+notifications:
+  slack:
+    on_success: change

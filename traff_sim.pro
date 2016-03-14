@@ -19,4 +19,5 @@ HEADERS += \
     inc/stdafx.hpp \
     inc/street.hpp \
     inc/car.hpp \
-    inc/utilities.hpp
+    inc/utilities.hpp \
+    test/manifest.hpp
