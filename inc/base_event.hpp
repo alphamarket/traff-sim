@@ -11,15 +11,38 @@ typedef std::function<void(vector<event_callback_arg>)> event_callback;
 
 class base_event
 {
+    /**
+     * @brief _events the event container box
+     */
     unordered_map<event, vector<event_callback>> _events;
 protected:
-    void fire(event, const vector<event_callback_arg>, bool = false) const;
+    /**
+     * @brief fire fires every event registered with the event-id
+     * @param id the id of event
+     * @param args the agument which will passed to event handlers
+     * @param async should the event calls processed async. from current thread?
+     */
+    void fire(event id, const vector<event_callback_arg> args, bool async = false) const;
 public:
     base_event();
     ~base_event();
-    base_event& operator()(event, event_callback);
+    /**
+     * @brief operator () registers a new event handler
+     * @param id the event id
+     * @param callback the handler
+     * @return current instance
+     */
+    base_event& operator()(event id, event_callback callback);
+    /**
+     * @brief add_event and interface to add event
+     * @return current instance
+     */
     inline base_event& add_event() { return *this; }
-    inline void remove_event(event name) { this->_events.erase(name); }
+    /**
+     * @brief remove_event removes all handlers assigned to an event
+     * @param id the event id
+     */
+    inline void remove_event(event id) { this->_events.erase(id); }
 };
 
 #endif // BASE_EVENT_H

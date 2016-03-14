@@ -7,20 +7,20 @@ base_event::base_event()
 base_event::~base_event()
 { }
 
-base_event& base_event::operator()(event name, event_callback callback) {
-    if(!this->_events.count(name))
-        this->_events.insert({name, vector<event_callback>()});
-    this->_events[name].push_back(callback);
+base_event& base_event::operator()(event id, event_callback callback) {
+    if(!this->_events.count(id))
+        this->_events.insert({id, vector<event_callback>()});
+    this->_events[id].push_back(callback);
     return *this;
 }
 
-void base_event::fire(event name, const vector<event_callback_arg> args, bool detach) const {
-    if(!this->_events.count(name)) return;
+void base_event::fire(event id, const vector<event_callback_arg> args, bool async) const {
+    if(!this->_events.count(id)) return;
     thread tr([&]() {
-        auto vec = this->_events.at(name);
+        auto vec = this->_events.at(id);
         for(event_callback& ec : vec) ec(args);
     });
-    if(detach)
+    if(async)
         tr.detach();
     else
         tr.join();
