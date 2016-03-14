@@ -14,8 +14,11 @@ addons:
     - libboost1.55-all-dev
     - cmake
 
+before_install:
+  - export NUM_CPU="`grep processor /proc/cpuinfo | wc -l`"; echo $NUM_CPU
+
 install:
-- if [ "$CXX" = "g++" ]; then export CXX="g++-4.8 -std=c++11 -pthread" CC="gcc-4.8"; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8 -std=c++11 -pthread" CC="gcc-4.8"; fi
 
 env:
   - BUILD_DIR="."
@@ -28,9 +31,9 @@ before_script:
   - cmake ..
 
 script:
-  - make
+  - make -j$NUM_CPU
   - if [ -e "test" ]; then ./test; fi
 
 notifications:
-  slack:
-    on_success: change
+  email:
+    on_failure: always
