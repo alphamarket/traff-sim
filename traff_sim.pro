@@ -7,7 +7,7 @@ CONFIG += c++11
 DEFINES += QTCTREATOR
 LIBS += -lpthread
 
-INCLUDEPATH += .
+INCLUDEPATH += . test/hpp
 
 SOURCES += \
     main.cpp \
@@ -20,4 +20,5 @@ HEADERS += \
     inc/street.hpp \
     inc/car.hpp \
     inc/utilities.hpp \
-    test/manifest.hpp
+    test/manifest.hpp \
+    test/TestCases/basic/carTestCase.hpp \

@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 
-SET(CMAKE_CXX_FLAGS "-D__TEST__")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -pthread -D__TEST__")
 
 project(GA_TSP_TEST)
 
-file(GLOB_RECURSE TEST_SOURCES)
+file(GLOB_RECURSE TEST_SOURCES "../src/*.cpp")
 file(GLOB_RECURSE TEST_HEADERS "hpp/*.hpp")
 
 set (TEST_INCLUDE_DIRS "")
@@ -14,7 +14,7 @@ foreach (_headerFile ${TEST_HEADERS})
 endforeach()
 list(REMOVE_DUPLICATES TEST_INCLUDE_DIRS)
 
-include_directories(${TEST_INCLUDE_DIRS})
+include_directories(${TEST_INCLUDE_DIRS} "..")
 add_executable (test testerMain.cpp ${TEST_SOURCES})
 
 # set warnings level

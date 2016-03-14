@@ -5,14 +5,14 @@
 /*
  * Include test case files
  */
-// #include "TestCases/example/fooTestCase.hpp"
+ #include "TestCases/basic/carTestCase.hpp"
 namespace CPP_TESTER {
     /**
      * bootstrap the test suite for testing
      */
     void __bootstrap() {
         /* example */
-        // registery::__register("Example Tester", new fooTestCase());
+        registery::__register("[BASIC] Car Test", new TESTS::BASIC::carTestCase());
     }
 }
 #endif	/* MANIFEST_HPP */
