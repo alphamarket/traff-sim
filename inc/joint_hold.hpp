@@ -11,6 +11,4 @@ public:
     street* dispatch_car(car_ptr, const street*) override { return nullptr; }
 };
 
-
 #endif // JOINT_HOLD_HPP
-

@@ -1,6 +1,21 @@
 #include "inc/joint.hpp"
 #include <algorithm>
 
+
+joint::joint(const joint & j)
+    : base_event(j), _name(j._name)
+{
+    this->_branches = j._branches;
+    this->_end_courses = j._end_courses;
+}
+
+joint::joint(joint&& j)
+    : base_event(j), _name(move(j._name))
+{
+    this->_branches = move(j._branches);
+    this->_end_courses = move(j._end_courses);
+}
+
 street* joint::dispatch_car(car_ptr c, const street* src) {
     // using softmax for computing the probability and roulette wheel to select a route
     size_t index = 0;

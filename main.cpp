@@ -1,9 +1,7 @@
 #include "inc/stdafx.hpp"
 #include <thread>
 
-#include "inc/joint.hpp"
-#include "inc/street.hpp"
-#include "inc/joint_kill.hpp"
+#include "inc/city.hpp"
 
 int main(int, char**) {
 #ifdef QTCTREATOR
@@ -17,5 +15,6 @@ int main(int, char**) {
     // streets DRIVES the cars that are bound to them
     // a traffic report sent from streets/joints to TCU
     // TCU monitors/predicts/changes the lights/reports status
+    city(10,10);
     return EXIT_SUCCESS;
 }

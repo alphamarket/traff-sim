@@ -1,12 +1,6 @@
 #include "inc/base_event.hpp"
 #include <thread>
 
-base_event::base_event()
-{ }
-
-base_event::~base_event()
-{ }
-
 base_event& base_event::operator()(event id, event_handler callback) {
     if(!this->_events.count(id))
         this->_events.insert({id, vector<event_handler>()});

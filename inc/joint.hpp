@@ -8,6 +8,7 @@
 
 class joint : public base_event
 {
+    const string _name;
     /**
      * @brief _end_courses the end course of the streets bound to current joint
      */
@@ -17,6 +18,20 @@ class joint : public base_event
      */
     vector<street_ptr> _branches;
 public:
+    /**
+     * @brief joint move ctor
+     */
+    joint(joint&&);
+    /**
+     * @brief joint copy ctor
+     */
+    joint(const joint&);
+    /**
+     * @brief joint ctor a joint
+     * @param name the name of joint
+     */
+    joint(const string name = "?") : _name(name) { }
+
     /**
      * @brief add_branch an add branch interface
      * @return current instance
@@ -61,5 +76,7 @@ public:
      */
     inline void dispatch_event(event id, event_handler callback) { FOR(i,0,this->_branches.size(),++) ((street_ptr)this->_branches[i])->event_add() (id, callback); }
 };
+
+typedef shared_ptr<joint> joint_ptr;
 
 #endif // JOINT_H

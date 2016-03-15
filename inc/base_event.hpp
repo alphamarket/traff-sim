@@ -24,8 +24,22 @@ protected:
      */
     void event_fire(event id, const vector<event_callback_arg> args, bool async = false) const;
 public:
-    base_event();
-    ~base_event();
+    /**
+     * @brief base_event default ctor
+     */
+    base_event() { }
+    /**
+     * @brief base_event move ctor
+     */
+    base_event(const base_event& b) : _events(b._events) { }
+    /**
+     * @brief base_event copy ctor
+     */
+    base_event(base_event&& b) : _events(move(b._events)) { }
+    /**
+     * @brief operator = assignment op.
+     */
+    base_event& operator =(const base_event& b) { this->_events = b._events; return *this; }
     /**
      * @brief operator () registers a new event handler
      * @param id the event id
