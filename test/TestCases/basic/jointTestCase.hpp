@@ -37,7 +37,7 @@ namespace CPP_TESTER { namespace TESTS { namespace BASIC {
                 // adjust the street's traffic weight randomly!
                 j[i]->traffic_weight(rand() % 3 + 1);
             }
-            // make sure we have 10 branches as desired
+            // make sure we have all of our branches as desired
             SHOULD_BE(j.size(), branch_count);
             // validate every street has only 1 car goes to its HEAD
             FOR(i,0,j.size(),++) { SHOULD_BE(j[i]->size(HEAD), 1); SHOULD_BE(j[i]->size(), 1); }
@@ -77,6 +77,8 @@ namespace CPP_TESTER { namespace TESTS { namespace BASIC {
             FOR(i,0,j.size(),++) { IS_FALSE(j[i]->event_has_defined(street::AFTER_EXIT)); IS_FALSE(j[i]->event_has_defined(street::ON_TRAFFIC_HOLD)); }
             j.dispatch_event(street::AFTER_EXIT, [](vector<const void*>) { });
             FOR(i,0,j.size(),++) { IS_TRUE(j[i]->event_has_defined(street::AFTER_EXIT)); IS_FALSE(j[i]->event_has_defined(street::ON_TRAFFIC_HOLD)); }
+            // validate the inherit of joint instance
+            IS_BASE_OF(base_event, decltype(j));
         }
     };
 

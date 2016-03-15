@@ -114,6 +114,13 @@ namespace CPP_TESTER { namespace TESTS { namespace BASIC {
             IS_TRUE(head_flow && !tail_flow);
             IS_TRUE(round(c->position()) == float(1));
             SHOULD_BE(c->max_speed(), float(1e-3));
+            // test event removal
+            s.event_remove(street::AFTER_EXIT);
+            s.event_remove(street::ON_TRAFFIC_HOLD);
+            IS_FALSE(s.event_has_defined(street::AFTER_EXIT));
+            IS_FALSE(s.event_has_defined(street::ON_TRAFFIC_HOLD));
+            // validate the inherit of street instance
+            IS_BASE_OF(base_event, decltype(s));
         }
     };
 

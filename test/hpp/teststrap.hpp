@@ -3,23 +3,26 @@
 #include <exception>
 #include <assert.h>
 #include <typeinfo>
+#if __cplusplus >= 201103L
+#   include <type_traits>
+#endif
 #include "bootstrap.hpp"
 /**
  * Makes sure the input is true
  */
-#define BESURE(o) assert(o)
+#define BESURE(o) assert((o))
 /**
  * Failure assertion with message
  */
-#define FAIL(o) BESURE(!o)
+#define FAIL(o) BESURE(!(o))
 /**
  * Makes sure the arguments are eqaul
  */
-#define IS_EQUAL(o, z) BESURE((o) == z)
+#define IS_EQUAL(o, z) BESURE((o) == (z))
 /**
  * Makes sure the arguments are NOT eqaul
  */
-#define NOT_EQUAL(o, z) BESURE((o) != z)
+#define NOT_EQUAL(o, z) BESURE((o) != (z))
 /**
  * Makes sure the arguments are eqaul
  */
@@ -197,7 +200,15 @@
  * Failure assertion
  */
 #define ASSERT_FAILURE FAIL
-/*
- * Include your boostrap files
+
+#if __cplusplus >= 201103L
+/**
+ * Makes sure the "o" is inherited from "b"
  */
+#define IS_BASE_OF(b, o) 							\
+  ((std::is_base_of<b, o>::value)								\
+   ? __ASSERT_VOID_CAST (0)						\
+   : __assert_fail ("Type inheritance", __FILE__, __LINE__, __ASSERT_FUNCTION))
+#endif
+
 #endif	/* TESTSTRAP_HPP */
