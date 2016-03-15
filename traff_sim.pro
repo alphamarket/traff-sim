@@ -31,4 +31,6 @@ HEADERS += \
     test/tests/basic/car_tester.hpp \
     test/tests/basic/joint_tester.hpp \
     test/tests/basic/street_tester.hpp \
-    test/manifest.hpp
+    test/manifest.hpp \
+    inc/joint_kill.hpp \
+    test/tests/basic/joint_kill_tester.hpp

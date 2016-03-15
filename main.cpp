@@ -3,6 +3,7 @@
 
 #include "inc/joint.hpp"
 #include "inc/street.hpp"
+#include "inc/joint_kill.hpp"
 
 int main(int, char**) {
 #ifdef QTCTREATOR
@@ -16,48 +17,5 @@ int main(int, char**) {
     // streets DRIVES the cars that are bound to them
     // a traffic report sent from streets/joints to TCU
     // TCU monitors/predicts/changes the lights/reports status
-    street_ptr s0(new street(10, "s0"));
-    FOR(i,0,4,++) {
-        car_ptr c(new car("C-"+to_string(i)));
-        c->direction(i < 2 ? HEAD : TAIL);
-        assert(s0->bound_car(c, (i < 2 ? TAIL : HEAD)));
-        c->max_speed(4.8);
-        cout<<"CAR "<<*c<<endl;
-    }
-    FOR(i,0,5,++) { s0->flow(); }
-    FOR(i,4,8,++) {
-        car_ptr c(new car("C-"+to_string(i)));
-        c->direction(i < 6 ? HEAD : TAIL);
-        assert(s0->bound_car(c, (i < 6 ? TAIL : HEAD)));
-        c->max_speed(20);
-        cout<<"CAR "<<*c<<endl;
-    }
-    joint j;
-    j.add_branch()
-        (s0, HEAD)
-        (s0, TAIL)
-        (street_ptr(new street(20, "s2")), TAIL)
-        (street_ptr(new street(20, "s3")), TAIL)
-        (street_ptr(new street(20, "s4")), TAIL);
-    j.dispatch_event(street::AFTER_EXIT, [](vector<const void*> args) {
-        assert(args.size() == 3);
-        const car* c = reinterpret_cast<const car*>(args[0]);
-        const street
-            *s = reinterpret_cast<const street*>(args[1]),
-            *t = reinterpret_cast<const street*>(args[2]);
-        cout<<"$ Car# «" << c->getID() <<"» going to «" << ::to_string(c->direction()) << "» with max speed of «"<<c->max_speed()<<" m/s» exited from «" << s->name() << " @ " << c->line() << "» to «" <<  t->name() << "»" << endl;
-    });
-    j.branches().back()->traffic_weight(2);
-    cout<<"----"<<endl;
-    size_t x = 0;
-    cout<<j;
-    while(x < j.size()) {
-        FOR(i,0,j.size(),++) {
-            bool hhf, thf;
-            j[i]->flow(1, &hhf, &thf);
-            if(!(hhf || thf)) x++; else x = 0;
-        }
-    }
-    cout<<j;
     return EXIT_SUCCESS;
 }
