@@ -7,26 +7,28 @@ CONFIG += c++11
 DEFINES += QTCTREATOR
 LIBS += -lpthread
 
-INCLUDEPATH += . test/hpp
+INCLUDEPATH += . test
 
 SOURCES += \
 #    main.cpp \
-    test/testerMain.cpp\
-    \
+    test/lizard/lizard.cpp \
     src/street.cpp \
     src/car.cpp \
     src/utilities.cpp \
     src/base_event.cpp \
-    src/joint.cpp
+    src/joint.cpp \
 
 HEADERS += \
     inc/stdafx.hpp \
     inc/street.hpp \
     inc/car.hpp \
     inc/utilities.hpp \
-    test/manifest.hpp \
-    test/TestCases/basic/carTestCase.hpp \
     inc/base_event.hpp \
     inc/joint.hpp \
-    test/TestCases/basic/streetTestCase.hpp \
-    test/TestCases/basic/jointTestCase.hpp \
+    test/lizard/lizard.hpp \
+    test/lizard/stdafx.hpp \
+    test/lizard/utilities.hpp \
+    test/tests/basic/car_tester.hpp \
+    test/tests/basic/joint_tester.hpp \
+    test/tests/basic/street_tester.hpp \
+    test/manifest.hpp

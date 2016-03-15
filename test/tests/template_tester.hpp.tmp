@@ -1,0 +1,17 @@
+#ifndef TEMPLATE_TESTER_HPP
+#define TEMPLATE_TESTER_HPP
+
+#include "lizard/lizard.hpp"
+//#include "path/to/template.hpp"
+
+namespace test {
+
+class template_tester : public lizard_base_tester {
+public:
+    void run() {
+    }
+};
+
+}
+
+#endif // TEMPLATE_TESTER_HPP
