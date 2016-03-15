@@ -8,6 +8,9 @@
 
 class joint : public base_event
 {
+    /**
+     * @brief _name the name of the joint
+     */
     const string _name;
     /**
      * @brief _end_courses the end course of the streets bound to current joint
@@ -31,12 +34,15 @@ public:
      * @param name the name of joint
      */
     joint(const string name = "?") : _name(name) { }
-
     /**
      * @brief add_branch an add branch interface
      * @return current instance
      */
     inline joint& add_branch() { return *this; }
+    /**
+     * @brief name get name of the joint
+     */
+    inline string name() const { return this->_name; }
     /**
      * @brief dispatch dispatches a car from a street source
      * @param c the car to be dispatched
@@ -68,7 +74,7 @@ public:
      * @param c the end-point of street which will going to attach to current joint
      * @return the current instance
      */
-    inline joint& operator()(street_ptr s, course c) { s->joints(c) = this; this->_end_courses.push_back(c); this->_branches.push_back(s); return *this; }
+    inline joint& operator()(street_ptr s, course c) { if(s) s->joints(c) = this; this->_end_courses.push_back(c); this->_branches.push_back(s); return *this; }
     /**
      * @brief dispatch_event dispatches an event to all branches of curren instance
      * @param id the event id

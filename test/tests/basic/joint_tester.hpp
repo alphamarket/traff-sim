@@ -76,6 +76,49 @@ public:
         FOR(i,0,j.size(),++) { IS_TRUE(j[i]->event_has_defined(street::AFTER_EXIT)); IS_FALSE(j[i]->event_has_defined(street::ON_TRAFFIC_HOLD)); }
         // validate the inherit of joint instance
         IS_BASE_OF(base_event, decltype(j));
+        // testing null branch effect
+        //  having a null branch should not effect the dispatch op.
+        //  and null branches are to be ignore at dispatching
+        j.branches().clear();
+        IS_ZERO(j.size());
+        SHOULD_NOT_THROW(j.add_branch()(street_ptr(new street(10, "S0")), HEAD));
+        SHOULD_NOT_THROW(j.add_branch()(street_ptr(new street(10, "S1")), HEAD));
+        SHOULD_NOT_THROW(j.add_branch()(nullptr, TAIL));
+        SHOULD_BE(j.size(), 3);
+        // add 2 cars into 2 non-null branches
+        FOR(i,0,2,++) {
+            car_ptr c(new car("XID"+std::to_string(i)));
+            c->direction(HEAD);
+            c->max_speed(10);
+            IS_TRUE(j[i]->bound_car(c, TAIL));
+        }
+        // validate the cars existance
+        SHOULD_BE(j[0]->size(), 1);
+        SHOULD_BE(j[1]->size(), 1);
+        IS_NULL(j[2]);
+        // flow the branch
+        flowless_count = 0;
+        while(flowless_count < j.size()) {
+            flowless_count = 0;
+            FOR(i,0,j.size(),++) {
+                if(!j[i]) { flowless_count++; continue; }
+                j[i]->flow(1, &head_flow, &tail_flow);
+                if(!(head_flow || tail_flow)) flowless_count++;
+                else flowless_count = 0;
+            }
+        }
+        // all street should remain in flowless mode at the end
+        SHOULD_BE(flowless_count, j.size());
+        // test the effect of car motions
+        SHOULD_BE(j[0]->size(), 1);
+        SHOULD_BE(j[1]->size(), 1);
+        IS_NULL(j[2]);
+        // check if cars swaped between two non-null streets(by their unique id)?
+        FOR(i,0,2,++) {
+            vector<car_ptr> v = (*j[i])(TAIL, 0);
+            SHOULD_BE(v.size(), 1);
+            SHOULD_BE(v.front()->getID(), "XID"+std::to_string((i + 1) % 2));
+        }
     }
 };
 
