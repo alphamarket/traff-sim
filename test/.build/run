@@ -1,0 +1,3 @@
+#!/bin/bash
+NUM_CPU="`grep processor /proc/cpuinfo | wc -l`"; echo $NUM_CPU
+clear && cmake .. && make -j$NUM_CPU && clear && ./test
