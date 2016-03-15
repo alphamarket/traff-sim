@@ -15,6 +15,6 @@ int main(int, char**) {
     // streets DRIVES the cars that are bound to them
     // a traffic report sent from streets/joints to TCU
     // TCU monitors/predicts/changes the lights/reports status
-    city(10,10);
+    city(20, 20);
     return EXIT_SUCCESS;
 }
