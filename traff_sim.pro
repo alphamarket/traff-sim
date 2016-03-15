@@ -10,13 +10,14 @@ LIBS += -lpthread
 INCLUDEPATH += . test
 
 SOURCES += \
-#    main.cpp \
-    test/lizard/lizard.cpp \
+    main.cpp \
+#    test/lizard/lizard.cpp \
     src/street.cpp \
     src/car.cpp \
     src/utilities.cpp \
     src/base_event.cpp \
     src/joint.cpp \
+    src/city.cpp
 
 HEADERS += \
     inc/stdafx.hpp \
@@ -35,4 +36,5 @@ HEADERS += \
     inc/joint_kill.hpp \
     test/tests/basic/joint_kill_tester.hpp \
     inc/joint_hold.hpp \
-    test/tests/basic/joint_hold_tester.hpp
+    test/tests/basic/joint_hold_tester.hpp \
+    inc/city.hpp
