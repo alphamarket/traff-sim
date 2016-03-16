@@ -7,7 +7,7 @@ CONFIG += c++11
 DEFINES += QTCTREATOR
 LIBS += -lpthread -lboost_system -lboost_thread -lboost_regex
 
-INCLUDEPATH += . test
+INCLUDEPATH += . test vendors/jsoncons/src
 
 SOURCES += \
     main.cpp \
@@ -18,7 +18,8 @@ SOURCES += \
     src/base_event.cpp \
     src/joint.cpp \
     src/city.cpp \
-    src/server.cpp
+    src/server.cpp \
+    src/main.helper.cpp
 
 HEADERS += \
     inc/stdafx.hpp \
@@ -38,4 +39,22 @@ HEADERS += \
     test/tests/basic/joint_hold_tester.hpp \
     inc/city.hpp \
     inc/server.hpp \
-    inc/http_request.hpp
+    inc/http_request.hpp \
+    inc/main.helper.hpp \
+    vendors/jsoncons/src/jsoncons/json.hpp \
+    vendors/jsoncons/src/jsoncons/json_deserializer.hpp \
+    vendors/jsoncons/src/jsoncons/json_error_category.hpp \
+    vendors/jsoncons/src/jsoncons/json_filter.hpp \
+    vendors/jsoncons/src/jsoncons/json_input_handler.hpp \
+    vendors/jsoncons/src/jsoncons/json_output_handler.hpp \
+    vendors/jsoncons/src/jsoncons/json_parser.hpp \
+    vendors/jsoncons/src/jsoncons/json_reader.hpp \
+    vendors/jsoncons/src/jsoncons/json_serializer.hpp \
+    vendors/jsoncons/src/jsoncons/json_structures.hpp \
+    vendors/jsoncons/src/jsoncons/json_type_traits.hpp \
+    vendors/jsoncons/src/jsoncons/jsoncons.hpp \
+    vendors/jsoncons/src/jsoncons/jsoncons_config.hpp \
+    vendors/jsoncons/src/jsoncons/jsoncons_io.hpp \
+    vendors/jsoncons/src/jsoncons/output_format.hpp \
+    vendors/jsoncons/src/jsoncons/ovectorstream.hpp \
+    vendors/jsoncons/src/jsoncons/parse_error_handler.hpp

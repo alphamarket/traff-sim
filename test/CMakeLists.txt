@@ -14,7 +14,7 @@ foreach (_headerFile ${iHEADERS})
 endforeach()
 list(REMOVE_DUPLICATES iINCLUDE_DIRS)
 
-include_directories(${iINCLUDE_DIRS} ".." ".")
+include_directories(${iINCLUDE_DIRS} ".." "." "../vendors/jsoncons/src/")
 
 add_executable (test lizard/lizard.cpp ${iSOURCES})
 

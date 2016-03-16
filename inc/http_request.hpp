@@ -2,9 +2,8 @@
 #define HTTP_REQUEST_H
 
 #include "stdafx.hpp"
+#include <unordered_map>
 #include <boost/algorithm/string.hpp>
-
-using namespace boost;
 
 class http_request {
     string _content_string;
@@ -15,8 +14,9 @@ public:
         bool content = false;
         vector<string> strs;
         boost::split(strs,request,boost::is_any_of("\n"));
-        this->_headers["Type"] = strs[0];
+        this->_headers["Type"] = boost::trim_copy(strs[0]);
         FOR(i,1,strs.size(),++) {
+            boost::trim(strs[i]);
             if(!content) {
                 if(!strs[i].length()) { content = true; continue; }
                 vector<string> spl;
@@ -28,6 +28,7 @@ public:
             } else
                 this->_content.push_back(strs[i]);
         }
+        this->_content_string = boost::join(this->content(), "\n");
     }
     inline vector<string> content() const { return this->_content;}
     inline string content_string() const { return this->_content_string; }

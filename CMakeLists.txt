@@ -14,7 +14,7 @@ foreach (_headerFile ${IHEADER})
 endforeach()
 list(REMOVE_DUPLICATES IINCLUDE_DIRS)
 
-include_directories(${IINCLUDE_DIRS} ".")
+include_directories(${IINCLUDE_DIRS} "." "vendors/jsoncons/src")
 
 add_executable (traff_sim main.cpp ${ISOURCES})
 

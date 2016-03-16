@@ -33,6 +33,19 @@
 		document.write(str);
 	}
 	$(document).ready(function(){
+
+    	$.ajax({
+			url: "http://127.0.0.1:2004",
+			method: "POST",
+			data: 'kmkmsa', 
+			success: function(data) {
+				console.log("FUCK");
+				console.log(data);
+				console.log([234, 5, 5, 5])
+			}
+		});
+		return;
+
 		var nodes = null;
 	    var edges = null;
 	    var network = null;

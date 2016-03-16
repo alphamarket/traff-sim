@@ -52,7 +52,7 @@ public:
      * @param until read termination flag
      * @return the read message
      */
-    string receive(SOCKET handler, boost::system::error_code* ec = nullptr, string until = "\n");
+    string receive(SOCKET handler, boost::system::error_code& ec, string until = "\n");
     /**
      * @brief send sends a message to a client
      * @param handler the client handler
@@ -60,8 +60,8 @@ public:
      * @param ec the error code output
      * @return the number byte sent
      */
-    inline size_t send(SOCKET handler, string msg, boost::system::error_code* ec = nullptr) {
-        return boost::asio::write(*this->get_socket(handler), boost::asio::buffer(msg), *ec);
+    inline size_t send(SOCKET handler, string msg, boost::system::error_code& ec) {
+        return boost::asio::write(*this->get_socket(handler), boost::asio::buffer(msg), ec);
     }
     /**
      * @brief get_socket get a client's socket
