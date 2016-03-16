@@ -33,11 +33,15 @@
 		document.write(str);
 	}
 	$(document).ready(function(){
-
+		data = {
+			status: "check",
+			last_cal: 'FUCKU'
+		};
     	$.ajax({
 			url: "http://127.0.0.1:2004",
 			method: "POST",
-			data: 'kmkmsa', 
+			data: JSON.stringify(data), 
+			cache: false,
 			success: function(data) {
 				console.log("FUCK");
 				console.log(data);

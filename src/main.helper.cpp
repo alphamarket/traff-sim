@@ -66,13 +66,21 @@ void thread_simulation() { return;
 }
 
 string thread_proxy_ui_process_command(const jsoncons::json& json) {
-    return "COMMAND!";
+    return "[\"COMMAND!\"]";
 }
 
 string thread_proxy_ui_process_request(const http_request& hr) {
-//    auto json = jsoncons::json::parse(hr.content_string());
-return "FUCK!";
-//    return thread_proxy_ui_process_command(json);
+    try{
+        auto json = jsoncons::json::parse(hr.content_string());
+        return thread_proxy_ui_process_command(json);
+
+    } catch(const jsoncons::json_exception& e) {
+        jsoncons::json j;
+        j["code"]   = "422";
+        j["result"] = "failed";
+        j["detail"] = "Unprocessable Entity";
+        return j.to_string();
+    }
 }
 
 void thread_proxy_ui() {
@@ -87,8 +95,7 @@ void thread_proxy_ui() {
             while (true) {
                 auto handle = h.accept();
                 string in = h.receive(handle, ec);
-                cout<<in<<flush;
-//                if(ec) { continue; }
+                if(ec) { continue; }
                 h.send(handle, get_http_output(thread_proxy_ui_process_request(http_request(in))), ec);
                 h.close(handle);
             }
