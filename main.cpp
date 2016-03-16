@@ -29,14 +29,20 @@ int main(int, char**) {
                 auto handle = h.accept();
                 cout<<"Client# "<< handle<< " in bound!"<<endl;
                 boost::system::error_code ec;
-                while(h[handle]->is_open()) {
                     string in = h.receive(handle, &ec);
                     if(ec) { cerr<<"ERROR: "<<ec<< endl; break; }
                     cout<<"[R] "<<in<<endl;
-                    h.send(handle, "[S] " + in, &ec);
+                    string out = "{\"FUCKU\": 1}";
+                    stringstream ss;
+                    ss  << "HTTP/1.x 200 OK\n"
+                        << "Connection: close\n"
+                        << "Content-Type: application/json\n"
+                        << "Access-Control-Allow-Origin: *\n"
+                        << "Content-Length: " + std::to_string(out.length())
+                        << endl << endl;
+                    h.send(handle, ss.str() + out, &ec);
                     if(ec) { cerr<<"ERROR: "<<ec<< endl; break; }
-                }
-                h.close(handle);
+                    h.close(handle);
                 cout<<"Client# "<< handle<< " closed!"<<endl;
             }
         }
