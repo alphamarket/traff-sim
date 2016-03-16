@@ -18,7 +18,7 @@ include_directories(${IINCLUDE_DIRS} ".")
 
 add_executable (traff_sim main.cpp ${ISOURCES})
 
-target_link_libraries (traff_sim pthread)
+target_link_libraries (traff_sim pthread boost_system boost_thread)
 
 # set warnings level
 IF(MSVC) # MSVC compiler (Win32 only)
