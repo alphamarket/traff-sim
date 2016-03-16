@@ -2,6 +2,7 @@
 #define BASE_EVENT_H
 
 #include "stdafx.hpp"
+#include <mutex>
 #include <functional>
 #include <unordered_map>
 
@@ -11,6 +12,10 @@ typedef std::function<void(vector<event_callback_arg>)> event_handler;
 
 class base_event
 {
+    /**
+     * @brief _mutex a mutex instance for thread safing stuff
+     */
+    mutable std::mutex _mutex;
     /**
      * @brief _events the event container box
      */

@@ -3,6 +3,8 @@
 
 #include "stdafx.hpp"
 
+#include <mutex>
+
 #include "car.hpp"
 #include "utilities.hpp"
 #include "base_event.hpp"
@@ -13,6 +15,10 @@ class joint;
 
 class street : public base_event
 {
+    /**
+     * @brief _mutex a mutex instance for thread safing stuff
+     */
+    mutable std::mutex _mutex;
     /**
      * @brief _name the name of street
      */

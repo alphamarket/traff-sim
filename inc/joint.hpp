@@ -9,6 +9,10 @@
 class joint : public base_event
 {
     /**
+     * @brief _mutex a mutex instance for thread safing stuff
+     */
+    mutable std::mutex _mutex;
+    /**
      * @brief _name the name of the joint
      */
     const string _name;
@@ -74,7 +78,7 @@ public:
      * @param c the end-point of street which will going to attach to current joint
      * @return the current instance
      */
-    inline joint& operator()(street_ptr s, course c) { if(s) s->joints(c) = this; this->_end_courses.push_back(c); this->_branches.push_back(s); return *this; }
+    inline joint& operator()(street_ptr s, course c) { this->_mutex.lock(); if(s) s->joints(c) = this; this->_end_courses.push_back(c); this->_branches.push_back(s); this->_mutex.unlock(); return *this; }
     /**
      * @brief dispatch_event dispatches an event to all branches of curren instance
      * @param id the event id

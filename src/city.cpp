@@ -62,7 +62,10 @@ city::city(size_t height, size_t weight)
                                 const street
                                     *s = reinterpret_cast<const street*>(args[1]),
                                     *t = reinterpret_cast<const street*>(args[2]);
-                                cout<<"$ Car# «" << c->getID() <<"» going to «" << ::to_string(c->direction()) << "» with max speed of «"<<c->max_speed()<<" m/s» exited from «" << s->name() << " @ " << c->line() << "» to «" <<  t->name() << "»" << endl;
+                                // making it thread safe
+                                stringstream ss;
+                                ss<<"$ Car# «" << c->getID() <<"» going to «" << ::to_string(c->direction()) << "» with max speed of «"<<c->max_speed()<<" m/s» exited from «" << s->name() << " @ " << c->line() << "» to «" <<  t->name() << "»" << endl;
+                                cout << ss.str();
                             });
                         // random traffic weight between [ 1, 10 ]
                         s->traffic_weight((1 + rand() % 10));
@@ -160,7 +163,7 @@ size_t city::add_cars(size_t count) {
 
     size_t added_car = 0;
 
-    // try as much as city can contain
+    // try as much as city can contain in one round
     count = min(count, this->get_size_streets() * 2 * CONST_STREET_LINES_NO - this->_car_no);
 
     FOR(i,0,count, ++) {

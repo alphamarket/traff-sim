@@ -14,6 +14,8 @@ street::street(size_t car_capacity, string name)
 
 street::~street()
 {
+    // wait for thread lock get unlocked and thread guard for ever
+    this->_mutex.lock();
 }
 
 string street::to_string() const {
@@ -70,8 +72,11 @@ size_t street::size(course c) const {
     switch (c) {
         case HEAD:
         case TAIL:
-            FOR(line, 0, CONST_STREET_LINES_NO, ++)
-                s += this->_cars[c][line].size();
+            // thread guard
+            this->_mutex.lock();
+                FOR(line, 0, CONST_STREET_LINES_NO, ++)
+                    s += this->_cars[c][line].size();
+            this->_mutex.unlock();
             return s;
         default: invalid_course();
     }
@@ -83,6 +88,7 @@ void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
     FOR(dir, HEAD, TAIL + 1, ++) {
         // foreach line in directions
         FOR(line, 0, CONST_STREET_LINES_NO, ++) {
+            this->_mutex.lock();
             // fetch a line's car
             auto way = &this->_cars[dir][line];
             // foreach car in current direction/line
@@ -135,6 +141,7 @@ void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
                 // update the position of car
                 c->position(_position);
             }
+            this->_mutex.unlock();
         }
     }
     // return the flowness flag of directions
@@ -145,10 +152,13 @@ void street::flow(float dt, bool* head_has_flow, bool* tail_has_flow) {
 void street::is_road_block(bool* head_has_flow, bool* tail_has_flow) const {
     if(!head_has_flow && tail_has_flow) return;
     bool has_flow[2/* [HEAD, TAIL] */] = {false, false};
-    FOR(dir, HEAD, TAIL + 1, ++)
-        FOR(line, 0, CONST_STREET_LINES_NO, ++)
-            has_flow[dir] = has_flow[dir] ||
-                            (this->_cars[dir][line].size() && this->_cars[dir][line].front()->position() < this->_length);
+    // thread guard
+    this->_mutex.lock();
+        FOR(dir, HEAD, TAIL + 1, ++)
+            FOR(line, 0, CONST_STREET_LINES_NO, ++)
+                has_flow[dir] = has_flow[dir] ||
+                    (this->_cars[dir][line].size() && this->_cars[dir][line].front()->position() < this->_length);
+    this->_mutex.unlock();
     if(head_has_flow) *head_has_flow = has_flow[HEAD] ;
     if(tail_has_flow) *tail_has_flow = has_flow[TAIL] ;
 }
@@ -182,7 +192,9 @@ bool street::bound_car(car_ptr c, course from) {
     // validate direction
     if(c->direction() != HEAD && c->direction() != TAIL) invalid_course();
     // accept the car
-    this->_cars[c->direction()][c->line()].push_back(c);
+    this->_mutex.lock();
+        this->_cars[c->direction()][c->line()].push_back(c);
+    this->_mutex.unlock();
     // flag the successfull adaption
     return true;
 }

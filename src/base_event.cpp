@@ -16,8 +16,10 @@ void base_event::event_fire(event id, const vector<event_callback_arg> args, boo
         // a warning free work-around to un-used arg.
         static_cast<void>(async);
 #endif
-        auto vec = this->_events.at(id);
-        for(event_handler& ec : vec) ec(args);
+        this->_mutex.lock();
+            auto vec = this->_events.at(id);
+            for(event_handler& ec : vec) ec(args);
+        this->_mutex.unlock();
 #ifndef QTCTREATOR
     });
     if(async)
