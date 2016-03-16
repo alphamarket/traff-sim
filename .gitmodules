@@ -1,0 +1,3 @@
+[submodule "vendors/jsoncons"]
+	path = vendors/jsoncons
+	url = git@github.com:danielaparker/jsoncons.git
