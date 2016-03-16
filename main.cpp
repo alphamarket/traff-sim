@@ -2,12 +2,6 @@
 #include <thread>
 #include <signal.h>
 
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
-
-using boost::asio::ip::tcp;
-
 #include "inc/city.hpp"
 
 #define SOCKET_MAIN
@@ -15,66 +9,74 @@ using boost::asio::ip::tcp;
 
 #include <boost/asio.hpp>
 
-struct Client
-{
-    boost::asio::io_service& io_service;
-    boost::asio::ip::tcp::socket socket;
+using boost::asio::ip::tcp;
 
-    Client(boost::asio::io_service& svc, std::string const& host, std::string const& port)
-        : io_service(svc), socket(io_service)
-    {
-        boost::asio::ip::tcp::resolver resolver(io_service);
-        boost::asio::ip::tcp::resolver::iterator endpoint = resolver.resolve(boost::asio::ip::tcp::resolver::query(host, port));
-        boost::asio::connect(this->socket, endpoint);
-    };
-
-    void send(std::string const& message) {
-        socket.send(boost::asio::buffer(message));
+class ServerHost {
+    const size_t _port;
+    size_t _socket_count = 0;
+    boost::asio::io_service _io_service;
+    unordered_map<size_t, tcp::socket*> _sockets;
+public:
+    ServerHost(size_t port) : _port(port){ }
+    size_t accept() {
+        tcp::socket* socket = new tcp::socket(this->_io_service);
+        tcp::acceptor acceptor(this->_io_service, tcp::endpoint(tcp::v4(), this->_port));
+        acceptor.accept(*socket);
+        this->_sockets[++this->_socket_count] = socket;
+        return this->_socket_count;
     }
+    string receive(size_t socket_id, boost::system::error_code* ec = nullptr, string until = "\n") {
+        boost::asio::streambuf sb;
+        tcp::socket* socket = this->get_socket(socket_id);
+        boost::asio::read_until(*socket, sb, until, *ec);
+        stringstream ss;
+        ss << &sb;
+        return ss.str();
+    }
+
+    size_t send(size_t socket_id, string msg, boost::system::error_code* ec = nullptr) {
+        return boost::asio::write(*this->get_socket(socket_id), boost::asio::buffer(msg), *ec);
+    }
+
+    tcp::socket* get_socket(size_t id) {
+        if(!this->_sockets.count(id)) throw runtime_error("undefined socket id!");
+        return this->_sockets[id];
+    }
+
+    void close(size_t socket_id) {
+        tcp::socket* socket = this->get_socket(socket_id);
+        socket->close();
+        this->_sockets.erase(socket_id);
+        delete socket;
+    }
+
+    bool is_open(size_t socket_id) {
+        return this->get_socket(socket_id)->is_open();
+    }
+    tcp::socket* operator [](size_t socket_id) { return this->get_socket(socket_id); }
+    tcp::socket* operator ()(size_t socket_id) { return this->get_socket(socket_id); }
 };
-
-
-#include <iostream>
-
-static const int PORT = 2004;
-
-void client_thread() {
-    boost::asio::io_service svc;
-    Client client(svc, "127.0.0.1", std::to_string(PORT));
-
-    client.send("hello world\n");
-    client.send("bye world\n");
-}
 
 void server_thread() {
     try
     {
-        boost::asio::io_service io_service;
-        boost::asio::ip::tcp::acceptor acceptor(io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), PORT));
-
         {
-            boost::asio::ip::tcp::socket socket(io_service);
-            acceptor.accept(socket);
-
-            boost::asio::streambuf sb, sr;
-            boost::system::error_code ec;
+            ServerHost h(2004);
+            cout<<"Initiating....."<<endl;
             while (true) {
-                boost::asio::read_until(socket, sb, "\n", ec);
-                if (ec) {
-                    std::cout << "status: " << ec.message() << "\n";
-                    break;
+                cout<<"Opening for clients....."<<endl;
+                auto handle = h.accept();
+                cout<<"Client# "<< handle<< " in bound!"<<endl;
+                boost::system::error_code ec;
+                while(h[handle]->is_open()) {
+                    string in = h.receive(handle, &ec);
+                    if(ec) { cerr<<"ERROR: "<<ec<< endl; break; }
+                    cout<<"[R] "<<in<<endl;
+                    h.send(handle, "[S] " + in, &ec);
+                    if(ec) { cerr<<"ERROR: "<<ec<< endl; break; }
                 }
-                stringstream ss;
-                ss << &sb;
-                std::cout << "received: '" << ss.str() << "'\n";
-                ostream sss(&sr);
-                sss << "send: '" << ss.str() << "'\n";
-                boost::asio::write(socket, sr, ec);
-
-                if (ec) {
-                    std::cout << "status: " << ec.message() << "\n";
-                    break;
-                }
+                h.close(handle);
+                cout<<"Client# "<< handle<< " closed!"<<endl;
             }
         }
     }
@@ -89,10 +91,6 @@ void server_thread() {
 int main() {
     boost::thread_group tg;
     tg.create_thread(server_thread);
-
-//    boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-//    tg.create_thread(client_thread);
-
     tg.join_all();
 }
 
