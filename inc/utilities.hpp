@@ -13,11 +13,11 @@ string to_string(course);
 course inverse_course(course);
 
 template<typename K, typename V>
-inline void json_build_str(K k, V v, size_t level, stringstream& ss, bool quote = true, bool colon = true)
-{ ss << endl << std::string(level * 3, ' ') << k << (colon ? ": " : "") << (quote ? "«" : "") << v << (quote ? "»" : ""); }
+inline void json_build_str(K k, V v, size_t level, stringstream& ss, bool quote = true, bool colon = true, bool new_line = true)
+{ ss << (new_line ? "\n" : "") << std::string(level * 3, ' ') << k << (colon ? ": " : "") << (quote ? "«" : "") << v << (quote ? "»" : ""); }
 
-inline void json_open_str(string name, size_t level, stringstream& ss) {
-    json_build_str(name + (name.length() ? ": " : ""), "{", level, ss, false, false);
+inline void json_open_str(string name, size_t level, stringstream& ss, bool new_line = true) {
+    json_build_str(name + (name.length() ? ": " : ""), "{", level, ss, false, false, new_line);
 }
 inline void json_close_str(size_t level, stringstream& ss) {
     json_build_str("", "}", level, ss, false, false);
