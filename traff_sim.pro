@@ -5,7 +5,7 @@ TEMPLATE = app
 TARGET = traff_sim
 CONFIG += c++11
 DEFINES += QTCTREATOR
-LIBS += -lpthread -lboost_system -lboost_thread
+LIBS += -lpthread -lboost_system -lboost_thread -lboost_regex
 
 INCLUDEPATH += . test
 
@@ -37,4 +37,5 @@ HEADERS += \
     test/tests/basic/joint_kill_tester.hpp \
     test/tests/basic/joint_hold_tester.hpp \
     inc/city.hpp \
-    inc/server.hpp
+    inc/server.hpp \
+    inc/http_request.hpp
