@@ -13,69 +13,89 @@ using boost::asio::ip::tcp;
 #define SOCKET_MAIN
 #ifdef SOCKET_MAIN
 
+#include <boost/asio.hpp>
 
-using boost::asio::ip::tcp;
-
-std::string make_daytime_string()
+struct Client
 {
-  using namespace std; // For time_t, time and ctime;
-  time_t now = time(0);
-  return ctime(&now);
+    boost::asio::io_service& io_service;
+    boost::asio::ip::tcp::socket socket;
+
+    Client(boost::asio::io_service& svc, std::string const& host, std::string const& port)
+        : io_service(svc), socket(io_service)
+    {
+        boost::asio::ip::tcp::resolver resolver(io_service);
+        boost::asio::ip::tcp::resolver::iterator endpoint = resolver.resolve(boost::asio::ip::tcp::resolver::query(host, port));
+        boost::asio::connect(this->socket, endpoint);
+    };
+
+    void send(std::string const& message) {
+        socket.send(boost::asio::buffer(message));
+    }
+};
+
+
+#include <iostream>
+
+static const int PORT = 2004;
+
+void client_thread() {
+    boost::asio::io_service svc;
+    Client client(svc, "127.0.0.1", std::to_string(PORT));
+
+    client.send("hello world\n");
+    client.send("bye world\n");
 }
 
-int main()
-{
+void server_thread() {
+    try
+    {
+        boost::asio::io_service io_service;
+        boost::asio::ip::tcp::acceptor acceptor(io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), PORT));
 
-    boost::asio::io_service io_service;
+        {
+            boost::asio::ip::tcp::socket socket(io_service);
+            acceptor.accept(socket);
 
-    // Get a list of endpoints corresponding to the server name.
-    tcp::resolver resolver(io_service);
+            boost::asio::streambuf sb, sr;
+            boost::system::error_code ec;
+            while (true) {
+                boost::asio::read_until(socket, sb, "\n", ec);
+                if (ec) {
+                    std::cout << "status: " << ec.message() << "\n";
+                    break;
+                }
+                stringstream ss;
+                ss << &sb;
+                std::cout << "received: '" << ss.str() << "'\n";
+                ostream sss(&sr);
+                sss << "send: '" << ss.str() << "'\n";
+                boost::asio::write(socket, sr, ec);
 
-    tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 2004));
-
-    // Try each endpoint until we successfully establish a connection.
-    tcp::socket socket(io_service);
-    acceptor.accept(socket);
-
-
-    std::string message = "DARIUSH: " + make_daytime_string();
-
-    boost::system::error_code ignored_error;
-    boost::asio::write(socket, boost::asio::buffer(message), ignored_error);
-
-    // Form the request. We specify the "Connection: close" header so that the
-    // server will close the socket after transmitting the response. This will
-    // allow us to treat all data up until the EOF as the content.
-    boost::asio::streambuf request, response;
-    std::ostream request_stream(&request), response_stream(&response);
-    request_stream << "GET " << "127.0.0.1" << " HTTP/1.0\r\n";
-    request_stream << "Host: " << "127.0.0.1" << "\r\n";
-    request_stream << "Accept: */*\r\n";
-    request_stream << "Connection: close\r\n\r\n";
-
-    // Send the request.
-    boost::asio::write(socket, request);
-    request_stream << "GET " << "127.0.0.1" << " HTTP/1.0\r\n";
-    request_stream << "Host: " << "127.0.0.1" << "\r\n";
-    request_stream << "Accept: */*\r\n";
-    request_stream << "Connection: close\r\n\r\n????";
-    boost::asio::write(socket, request);
-
-    while(socket.is_open()) {
-        boost::system::error_code error;
-        std::string s;
-        while (boost::asio::read_until(socket, response, "\n", error)) {
-            std::istream is(&response);
-            is >> s;
-            std::cout << "[RECEIVE]" << s <<endl;
-            request_stream << "[SENT]" << s <<endl;
-            boost::asio::write(socket, request);
+                if (ec) {
+                    std::cout << "status: " << ec.message() << "\n";
+                    break;
+                }
+            }
         }
     }
-
-
-    return 0;
+    catch (std::exception& e)
+    {
+        std::cerr << "Exception: " << e.what() << std::endl;
+    }
 }
+
+#include <boost/thread.hpp>
+
+int main() {
+    boost::thread_group tg;
+    tg.create_thread(server_thread);
+
+//    boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+//    tg.create_thread(client_thread);
+
+    tg.join_all();
+}
+
 
 #else
 
