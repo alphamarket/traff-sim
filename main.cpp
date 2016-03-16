@@ -3,6 +3,7 @@
 #include <signal.h>
 
 #include "inc/city.hpp"
+#include "inc/server.hpp"
 
 atomic<bool> stop(false);
 
@@ -18,32 +19,31 @@ int main(int, char**) {
     // streets DRIVES the cars that are bound to them
     // a traffic report sent from streets/joints to TCU
     // TCU monitors/predicts/changes the lights/reports status
+    try
     {
-        city c(24, 24);
-        thread t([&]() {
-            while(!stop) {
-                string s;
-                cin >> s;
-                if(s.length() < 2) { clear_screen(); cout<<(s + " : [ IGNORED ]\n"); continue; }
-                switch(s[0]) {
-                case 's':
-                    c.time_step(stof(s.substr(1)));
-                    cout << "\nDONE\n";
-                    break;
-                case 'd':
-                    c.cluster_delay(stof(s.substr(1)));
-                    cout << "\nDONE\n";
-                    break;
+        {
+            server h(2004);
+            cout<<"Initiating....."<<endl;
+            while (true) {
+                cout<<"Opening for clients....."<<endl;
+                auto handle = h.accept();
+                cout<<"Client# "<< handle<< " in bound!"<<endl;
+                boost::system::error_code ec;
+                while(h[handle]->is_open()) {
+                    string in = h.receive(handle, &ec);
+                    if(ec) { cerr<<"ERROR: "<<ec<< endl; break; }
+                    cout<<"[R] "<<in<<endl;
+                    h.send(handle, "[S] " + in, &ec);
+                    if(ec) { cerr<<"ERROR: "<<ec<< endl; break; }
                 }
+                h.close(handle);
+                cout<<"Client# "<< handle<< " closed!"<<endl;
             }
-        });
-        t.detach();
-        cout<<c.add_cars(10)<<endl;
-        cout<<c.status()<<endl;
-        c.flow_start();
-        signal(SIGINT, [](int) { cout<<"EXITING....."<<endl; stop = true; });
-        while(!stop);
+        }
     }
-    cout<<"EXITED!"<<endl;
+    catch (std::exception& e)
+    {
+        std::cerr << "Exception: " << e.what() << std::endl;
+    }
     return EXIT_SUCCESS;
 }
