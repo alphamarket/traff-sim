@@ -41,7 +41,7 @@ private:
     std::atomic<flow_stat> _flow_stat;
     vector<mutex>  _flow_threads_mutex;
     vector<vector<street_ptr>> _cluster_streets;
-    std::atomic<float> _dt, _delay_milliseconds;
+    std::atomic<float> _time_step, _cluster_delay_milliseconds;
 public:
     ~city();
     city(size_t height, size_t weight);
@@ -51,9 +51,13 @@ public:
     void flow_start();
     size_t add_cars(size_t count);
     inline void flow_pause() { this->_flow_stat = PAUSE; }
+    inline void time_step(float ts) { this->_time_step = ts; }
+    inline float time_step() const { return this->_time_step; }
     inline size_t get_size_cars() const { return this->_car_no; }
     inline size_t get_size_blocks() const { return this->_height * this->_weight; }
+    inline float cluster_delay() const { return this->_cluster_delay_milliseconds; }
     inline size_t get_size_cluster_street() const { return this->_cluster_streets.size(); }
+    inline void cluster_delay(float milliseconds) { this->_cluster_delay_milliseconds = milliseconds; }
     inline size_t get_size_streets() const { if(!this->_cluster_streets.size()) return 0; return (this->_cluster_streets.size() - 1) * CONST_CLUSTER_STREET_MAX_SIZE + this->_cluster_streets.back().size(); }
 };
 

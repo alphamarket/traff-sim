@@ -4,7 +4,7 @@
 #include <functional>
 
 city::city(size_t height, size_t weight)
-    : _height(height), _weight(weight), _car_no(0), _flow_stat(STOP), _dt(1), _delay_milliseconds(20)
+    : _height(height), _weight(weight), _car_no(0), _flow_stat(STOP), _time_step(1), _cluster_delay_milliseconds(20)
 {
     this->_blocks = new joint_ptr*[this->_height];
     // init joints
@@ -140,8 +140,8 @@ void city::flow_start() {
             flow_cluster,
             std::ref(this->_cluster_streets[i]),
             std::ref(this->_flow_stat),
-            std::ref(this->_delay_milliseconds),
-            std::ref(this->_dt)
+            std::ref(this->_cluster_delay_milliseconds),
+            std::ref(this->_time_step)
         ));
         this->_flow_threads.back().detach();
     }

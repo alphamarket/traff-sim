@@ -4,7 +4,7 @@
 
 #include "inc/city.hpp"
 
-bool stop = false;
+atomic<bool> stop(false);
 
 int main(int, char**) {
 #ifdef QTCTREATOR
@@ -20,6 +20,24 @@ int main(int, char**) {
     // TCU monitors/predicts/changes the lights/reports status
     {
         city c(24, 24);
+        thread t([&]() {
+            while(!stop) {
+                string s;
+                cin >> s;
+                if(s.length() < 2) { clear_screen(); cout<<(s + " : [ IGNORED ]\n"); continue; }
+                switch(s[0]) {
+                case 's':
+                    c.time_step(stof(s.substr(1)));
+                    cout << "\nDONE\n";
+                    break;
+                case 'd':
+                    c.cluster_delay(stof(s.substr(1)));
+                    cout << "\nDONE\n";
+                    break;
+                }
+            }
+        });
+        t.detach();
         cout<<c.add_cars(10)<<endl;
         cout<<c.status()<<endl;
         c.flow_start();
