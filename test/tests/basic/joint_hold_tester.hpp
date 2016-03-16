@@ -2,7 +2,7 @@
 #define JOINT_HOLD_BASIC_TESTER_HPP
 
 #include "lizard/lizard.hpp"
-#include "inc/joint_hold.hpp"
+#include "inc/joint.hpp"
 
 namespace test {
 

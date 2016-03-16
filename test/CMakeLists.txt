@@ -18,7 +18,7 @@ include_directories(${iINCLUDE_DIRS} ".." ".")
 
 add_executable (test lizard/lizard.cpp ${iSOURCES})
 
-target_link_libraries (test pthread)
+target_link_libraries (test pthread pthread boost_system boost_thread)
 
 # set warnings level
 IF(MSVC) # MSVC compiler (Win32 only)

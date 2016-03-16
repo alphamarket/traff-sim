@@ -2,7 +2,7 @@
 #define JOINT_KILL_BASIC_TESTER_HPP
 
 #include "lizard/lizard.hpp"
-#include "inc/joint_kill.hpp"
+#include "inc/joint.hpp"
 
 namespace test {
 

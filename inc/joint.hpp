@@ -89,4 +89,21 @@ public:
 
 typedef shared_ptr<joint> joint_ptr;
 
+/**
+ * @brief The joint_kill class, never dispatches a car
+ */
+class joint_hold : public joint {
+public:
+    street* dispatch_car(car_ptr, const street*) override { return nullptr; }
+};
+
+/**
+ * @brief The joint_kill class, kills every car that passed to be dispatched
+ */
+class joint_kill : public joint {
+public:
+    street* dispatch_car(car_ptr, const street *src) override { return const_cast<street*>(src); }
+};
+
+
 #endif // JOINT_H
