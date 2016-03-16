@@ -4,46 +4,9 @@
 
 #include "inc/city.hpp"
 
-#define SOCKET_MAIN
-#ifdef SOCKET_MAIN
-
-#include "inc/server.hpp"
-
-int main() {
-    try
-    {
-        {
-            server h(2004);
-            cout<<"Initiating....."<<endl;
-            while (true) {
-                cout<<"Opening for clients....."<<endl;
-                auto handle = h.accept();
-                cout<<"Client# "<< handle<< " in bound!"<<endl;
-                boost::system::error_code ec;
-                while(h[handle]->is_open()) {
-                    string in = h.receive(handle, &ec);
-                    if(ec) { cerr<<"ERROR: "<<ec<< endl; break; }
-                    cout<<"[R] "<<in<<endl;
-                    h.send(handle, "[S] " + in, &ec);
-                    if(ec) { cerr<<"ERROR: "<<ec<< endl; break; }
-                }
-                h.close(handle);
-                cout<<"Client# "<< handle<< " closed!"<<endl;
-            }
-        }
-    }
-    catch (std::exception& e)
-    {
-        std::cerr << "Exception: " << e.what() << std::endl;
-    }
-}
-
-
-#else
-
 atomic<bool> stop(false);
 
-int main(int argc, char** argv) {
+int main(int, char**) {
 #ifdef QTCTREATOR
     updateseed();
 #else
@@ -84,5 +47,3 @@ int main(int argc, char** argv) {
     cout<<"EXITED!"<<endl;
     return EXIT_SUCCESS;
 }
-
-#endif
