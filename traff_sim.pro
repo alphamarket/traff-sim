@@ -17,7 +17,8 @@ SOURCES += \
     src/utilities.cpp \
     src/base_event.cpp \
     src/joint.cpp \
-    src/city.cpp
+    src/city.cpp \
+    src/server.cpp
 
 HEADERS += \
     inc/stdafx.hpp \
@@ -37,4 +38,5 @@ HEADERS += \
     test/tests/basic/joint_kill_tester.hpp \
     inc/joint_hold.hpp \
     test/tests/basic/joint_hold_tester.hpp \
-    inc/city.hpp
+    inc/city.hpp \
+    inc/server.hpp

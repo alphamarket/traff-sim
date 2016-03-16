@@ -7,61 +7,13 @@
 #define SOCKET_MAIN
 #ifdef SOCKET_MAIN
 
-#include <boost/asio.hpp>
+#include "inc/server.hpp"
 
-using boost::asio::ip::tcp;
-
-class ServerHost {
-    const size_t _port;
-    size_t _socket_count = 0;
-    boost::asio::io_service _io_service;
-    unordered_map<size_t, tcp::socket*> _sockets;
-public:
-    ServerHost(size_t port) : _port(port){ }
-    size_t accept() {
-        tcp::socket* socket = new tcp::socket(this->_io_service);
-        tcp::acceptor acceptor(this->_io_service, tcp::endpoint(tcp::v4(), this->_port));
-        acceptor.accept(*socket);
-        this->_sockets[++this->_socket_count] = socket;
-        return this->_socket_count;
-    }
-    string receive(size_t socket_id, boost::system::error_code* ec = nullptr, string until = "\n") {
-        boost::asio::streambuf sb;
-        tcp::socket* socket = this->get_socket(socket_id);
-        boost::asio::read_until(*socket, sb, until, *ec);
-        stringstream ss;
-        ss << &sb;
-        return ss.str();
-    }
-
-    size_t send(size_t socket_id, string msg, boost::system::error_code* ec = nullptr) {
-        return boost::asio::write(*this->get_socket(socket_id), boost::asio::buffer(msg), *ec);
-    }
-
-    tcp::socket* get_socket(size_t id) {
-        if(!this->_sockets.count(id)) throw runtime_error("undefined socket id!");
-        return this->_sockets[id];
-    }
-
-    void close(size_t socket_id) {
-        tcp::socket* socket = this->get_socket(socket_id);
-        socket->close();
-        this->_sockets.erase(socket_id);
-        delete socket;
-    }
-
-    bool is_open(size_t socket_id) {
-        return this->get_socket(socket_id)->is_open();
-    }
-    tcp::socket* operator [](size_t socket_id) { return this->get_socket(socket_id); }
-    tcp::socket* operator ()(size_t socket_id) { return this->get_socket(socket_id); }
-};
-
-void server_thread() {
+int main() {
     try
     {
         {
-            ServerHost h(2004);
+            server h(2004);
             cout<<"Initiating....."<<endl;
             while (true) {
                 cout<<"Opening for clients....."<<endl;
@@ -84,14 +36,6 @@ void server_thread() {
     {
         std::cerr << "Exception: " << e.what() << std::endl;
     }
-}
-
-#include <boost/thread.hpp>
-
-int main() {
-    boost::thread_group tg;
-    tg.create_thread(server_thread);
-    tg.join_all();
 }
 
 
