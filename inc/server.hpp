@@ -21,15 +21,20 @@ class server
      */
     SOCKET _socket_count = 0;
     /**
+     * @brief _io_service io server instance
+     */
+    boost::asio::io_service* _io_service;
+    /**
      * @brief _sockets the accepted sockets packages
      */
     unordered_map<SOCKET, socket_ptr> _sockets;
 public:
+    ~server() noexcept { delete this->_io_service; }
     /**
      * @brief server ctor
      * @param port the listening port
      */
-    server(size_t port) : _port(port){ }
+    server(size_t port) : _port(port), _io_service(new boost::asio::io_service()) { }
     /**
      * @brief accepts a new client
      * @return the client's handler
