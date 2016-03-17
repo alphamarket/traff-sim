@@ -11,8 +11,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
-#define CONST_CITY_WIDTH  10
-#define CONST_CITY_HEIGHT 10
+#define CONST_CITY_WIDTH  0
+#define CONST_CITY_HEIGHT 0
 
 atomic<bool> _stop(false);
 city* _city = new city(CONST_CITY_HEIGHT, CONST_CITY_WIDTH);
@@ -71,10 +71,10 @@ string thread_proxy_ui_process_command(const jsoncons::json& json) {
     typedef pair<string, vector<string>> command_set;
     // consts
     const auto invalid_input = []() { throw jsoncons::json_exception_0<runtime_error>("invalid input!"); return ""; };
-    const auto fields_exist = [&json](string name) { return json.find(name) != json.members().end(); };
+    const auto field_exists = [](const jsoncons::json& json, string name) { return json.find(name) != json.members().end(); };
     // define valid feild's valid commands
     const vector<command_set> commands = {
-        command_set("op", { "get_info", "init", "feedback", "action", "help"}),
+        command_set("op", { "get_info", "init", "feedback", "setting", "help"}),
     };
     // define command feild's valid commands' handlers
     const vector<vector<std::function<string(json_t)>>> funcs {
@@ -93,9 +93,9 @@ string thread_proxy_ui_process_command(const jsoncons::json& json) {
                 return jj.to_string();
             },
             // init
-            [&fields_exist, &invalid_input](json_t j) {
+            [&field_exists, &invalid_input](json_t j) {
                 using jsoncons::json;
-                if(!fields_exist("params"))     invalid_input();
+                if(!field_exists(j, "params"))     invalid_input();
                 _city->flow_stop();
                 this_thread::sleep_for(chrono::seconds(3));
                 json params = j["params"];
@@ -138,19 +138,35 @@ string thread_proxy_ui_process_command(const jsoncons::json& json) {
                 }
                 return jj.to_string();
             },
-            // action
-            [&fields_exist, &invalid_input](json_t j) {
+            // setting
+            [&field_exists, &invalid_input](json_t j) {
                 using jsoncons::json;
-                if(!fields_exist("action"))     invalid_input();
-                if(j["action"] == "STOP")       _city->flow_stop();
-                else if(j["action"] == "START") _city->flow_start();
-                else if(j["action"] == "PAUSE") _city->flow_pause();
-                else if(j["action"] == "time_step" && fields_exist("value")) _city->time_step(j["value"].as<float>());
-                else if(j["action"] == "cluster_delay" && fields_exist("value")) _city->cluster_delay(j["value"].as<float>());
-                else invalid_input();
+                if(!field_exists(j, "set"))        invalid_input();
+                auto settings = j["set"];
+                if(!field_exists(settings, "key") || !field_exists(settings, "value")) invalid_input();
+                vector<string>
+                    key = settings["key"].as<vector<string>>(),
+                    value = settings["value"].as<vector<string>>();
+                if(key.size() != value.size()) invalid_input();
+                FOR(i,0,key.size(),++) {
+                    if(key[i] == "flow") {
+                        if(value[i] == "STOP")       _city->flow_stop();
+                        else if(value[i] == "START") _city->flow_start();
+                        else if(value[i] == "PAUSE") _city->flow_pause();
+                        else invalid_input();
+                    }
+                    else if(key[i] == "time_step")
+                        _city->time_step(boost::lexical_cast<float>(value[i]));
+                    else if(key[i] == "cluster_delay")
+                        _city->cluster_delay(boost::lexical_cast<float>(value[i]));
+                    else if(key[i] == "add_cars")
+                        _city->add_cars(boost::lexical_cast<size_t>(value[i]));
+                    else
+                        invalid_input();
+                }
                 json jj;
                 jj["op"] = j["op"];
-                jj["result"] = to_string(_city->get_stat_flow());
+                jj["result"] = j["set"];
                 jj["status"] = "OK";
                 return jj.to_string();
             },
@@ -174,7 +190,7 @@ string thread_proxy_ui_process_command(const jsoncons::json& json) {
     };
     assert(commands.size() == funcs.size());
     // validate the SHOULD EXIST fields
-    for(auto& f : commands) if(!fields_exist(f.first)) invalid_input();
+    for(auto& f : commands) if(!field_exists(json, f.first)) invalid_input();
     // iterate over ops
     FOR(i,0,commands.size(),++) {
         FOR(j,0,commands[i].second.size(),++)
