@@ -33,7 +33,8 @@ function data_setting(key, value) {
 };
 // makes a request to server
 // on successful result the callback will get fired
-function make_request(data, succ_callback) {
+function make_request(data, succ_callback, indicate) {
+	var indicate = indicate === undefined ? true : indicate
 	$.ajax({
 		url: "net.php",
 		method: "POST",
@@ -41,8 +42,8 @@ function make_request(data, succ_callback) {
 		cache: false,
 		dataType: 'json',
 		success: succ_callback,
-		complete: function() { $('#log-content .trans-log').parent().remove(); },
-		beforeSend: function() { log("<span class='trans-log'>Talking to server...</span>"); }
+		complete: function() { if(indicate) $("#log-update-spin").fadeOut(1000, function() { $(this).removeData('busy'); }); },
+		beforeSend: function() { if(indicate && !$("#log-update-spin").data("busy")) $("#log-update-spin").data('busy', true).fadeIn(1000); }
 	}).fail(function( xhr, textStatus ) {
 		log('Error '+xhr.status+' while trying to connect with server!', 'danger');
 	}).always(function() { $('#log-spin').fadeIn(); });
@@ -107,6 +108,8 @@ function draw_grid(elem, grid) {
 				for (var k = 0; k < prev_s.length; k++) {
 					if(prev_s[k].dir === 'R') {
 						node.x = prev.x + 300 * Math.log(prev_s[k].length);
+						// also count the incommig traffics to current joint
+						node.value += prev_s[k].traffic_weight;
 						break;
 					}
 				}
@@ -117,6 +120,8 @@ function draw_grid(elem, grid) {
 				for (var k = 0; k < prev_s.length; k++) {
 					if(prev_s[k].dir === 'D') {
 						node.y = prev.y + 300 * Math.log(prev_s[k].length); 
+						// also count the incommig traffics to current joint
+						node.value += prev_s[k].traffic_weight;
 						break;
 					}
 				}

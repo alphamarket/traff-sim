@@ -96,7 +96,9 @@
 		<div class="clearfix"></div>
 		</fieldset>
 		<div id="log" class="col-md-12">
-			<h4 class='text-muted section' style='margin-left: -15px'>Logs</h4>
+			<h4 class='text-muted pull-left section' style='margin-left: -15px'>Logs</h4>
+			<small class='text-muted pull-right' id='log-update-spin' style="display:none; margin-top: 15px;"><span class='fa fa-spinner fa-spin'></span> updating....</small>
+			<div class='clearfix'></div>
 			<ul class='list-group' id="log-content"></ul>
 		</div>
 	</div>
