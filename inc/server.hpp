@@ -46,13 +46,28 @@ public:
      */
     void close(SOCKET handler);
     /**
+     * @brief receives a message from a client until reaches EOF
+     * @param handler the client handler
+     * @param ec the error code output
+     * @return the read message
+     */
+    string receive(SOCKET handler, boost::system::error_code& ec);
+    /**
      * @brief receives a message from a client
      * @param handler the client handler
      * @param ec the error code output
      * @param until read termination flag
      * @return the read message
      */
-    string receive(SOCKET handler, boost::system::error_code& ec, string until = "\n");
+    string receive(SOCKET handler, boost::system::error_code& ec, string until);
+    /**
+     * @brief receives a message from a client
+     * @param handler the client handler
+     * @param ec the error code output
+     * @param size read max size of bytes
+     * @return the read message
+     */
+    string receive(SOCKET handler, boost::system::error_code& ec, size_t& size);
     /**
      * @brief send sends a message to a client
      * @param handler the client handler

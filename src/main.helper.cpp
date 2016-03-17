@@ -183,9 +183,9 @@ string thread_proxy_ui_process_command(const jsoncons::json& json) {
     return invalid_input();
 }
 
-string thread_proxy_ui_process_request(const http_request& hr) {
+string thread_proxy_ui_process_request(const string& request) {
     try{
-        auto json = jsoncons::json::parse(hr.content_string());
+        auto json = jsoncons::json::parse(request);
         return thread_proxy_ui_process_command(json);
 
     } catch(const jsoncons::json_exception& e) {
@@ -203,18 +203,14 @@ void thread_proxy_ui() {
         if(!_city) { this_thread::sleep_for(chrono::microseconds(100)); continue; }
         try
         {
-            const string http_respond_header = "HTTP/1.x 200 OK\nConnection: close\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n";
-            const auto get_http_output = [http_respond_header](string data) { return http_respond_header + "Content-Length: " + std::to_string(data.length()) + "\n\n" + data; };
-
             server h(2004);
             boost::system::error_code ec;
             while (true) {
                 auto handle = h.accept();
                 sleep_time = 1; // reset sleep time
-                string in = h.receive(handle, ec);
-                cout << in << endl;
-                if(ec) { continue; }
-                h.send(handle, get_http_output(thread_proxy_ui_process_request(http_request(in))), ec);
+                string in = h.receive(handle, ec, "\n");
+                if(ec) { h.close(handle); continue; }
+                h.send(handle, thread_proxy_ui_process_request(in), ec);
                 h.close(handle);
             }
         }
