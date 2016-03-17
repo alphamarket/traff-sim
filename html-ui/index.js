@@ -57,6 +57,8 @@ function is_failed_data(data, do_log) {
 };
 // create a 2D array
 function makeArray(d1, d2) { var arr = new Array(d1), i, l; for(i = 0, l = d1; i < l; i++) arr[i] = new Array(d2); return arr; };
+// get coordinate of a street based on it's naming
+function get_street_coord(name) { var o = (/\[\s*(\d+)\s*,\s*(\d+)\s*\].*-(\w)/g).exec(name); if(o.length < 4) throw "invalid name!"; return [parseInt(o[1]), parseInt(o[2]), o[3]]; }
 // converts a feed instance into processable structure
 function convert_feed(grid_size, feed) {
 	if(feed.clusters === undefined || !feed.clusters.length) return [];
@@ -66,10 +68,10 @@ function convert_feed(grid_size, feed) {
 	for (var i = 0; i < feed.length; i++) c = c.concat(feed[i]);
 	for (var i = 0; i < c.length; i++) {
 		var s = c[i];
-		var loc = (/\[\s*(\d+)\s*,\s*(\d+)\s*\].*-(\w)/g).exec(s.name);
-		var h = parseInt(loc[1]), w = parseInt(loc[2]);
+		var loc = get_street_coord(s.name);
+		var h = loc[0], w = loc[1];
 		s.loc = [h, w];
-		s.dir = loc[3];
+		s.dir = loc[2];
 		if(gs[h][w] === undefined) gs[h][w] = [];
 		gs[h][w].push(s);
 	}
