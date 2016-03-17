@@ -16,26 +16,55 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 </head>
-<body>
+<body style='overflow: hidden;'>
+
+
+<style type="text/css">
+	.section {
+		border-bottom: 3px solid #e6e6e6; width: 33%;
+		padding-bottom: 10px;
+	}
+	.full-height {
+		display: none;
+	}
+</style>
+
+<div class="row">
+  	<div id="mynetwork" class="full-height col-md-8" style="border-right:1px solid #ddd">
+	</div>
+	<div id="sidebar" class="full-height col-md-4"  style="padding: 20px; padding-right: 30px; position: relative; min-height: 100px">
+		<h2 class="pull-left">TrafficMeter</h2>
+		<h3 class="pull-right"><small>developed by <a href="http://github.com/noise2" target="__blank"><span class='glyphicon glyphicon-new-window'></span> Dariush Hasanpoor</a></small></h3>
+		<div class="clearfix"></div>
+		<hr />
+		<h4 class='text-muted section'>Options</h4>
+		<fieldset>
+		</fieldset>
+		<div id="log" style='height: 50%; overflow-x: hidden; word-wrap: break-word; overflow-y: auto; display: none;'>
+			<h4 class='text-muted section'>Logs</h4>
+		</div>
+	</div>
+</div>
+
+
 <script src="/statics/js/jquery.min.js" type="text/javascript"></script> 
 <script src="/statics/js/bootstrap.min.js" type="text/javascript"></script> 
 <script type="text/javascript" src="vis/vis.js"></script>
 <link href="vis/vis.css" rel="stylesheet" type="text/css" />
-
-  <style type="text/css">
-    * {
-      font: 50pt arial;
-    }
-  </style>
-    
+   
 <script type="text/javascript">
 	function echo(str) {
 		document.write(str);
 	}
 	$(document).ready(function(){
 		data = {
-			op: "help",
-			action: "PAUSE"
+			op: "init",
+			params: {
+				size: [100,100],
+				car_no: 10,
+				time_step: 1,
+				cluster_delay: 10
+			}
 		};
     	$.ajax({
 			url: "http://127.0.0.1:2004",
@@ -44,7 +73,7 @@
 			cache: false,
 			success: function(data) {
 				console.log("FUCK");
-				console.log(data);
+				$("#log").append(JSON.stringify(data));
 				console.log([234, 5, 5, 5])
 			}
 		});
@@ -87,34 +116,51 @@
 
 	      // Instantiate our network object.
 	      var container = document.getElementById('mynetwork');
-	      var data = {
-	        nodes: nodes,
-	        edges: edges
-	      };
-	      var z = []
-	      for(var i = 0; i < 10; i++) {
-	      	nodes[i].x = i * 100;
-	      	nodes[i].y = i * 100;
+	      var z = [];
+	      nodes = [];
+	      edges = [];
+	      var coor2id = function(x, y, x_max) { return x * x_max + y; };
+	      var height = 10;
+	      var width = 10;
+	      for(var i = 0; i < height; i++) {
+			for(var j = 0; j < width; j++) {
+				e = [];
+				if(i != height - 1)
+					e.push({from: coor2id(i,j,height), to: coor2id(i+1,j,height), value: 1, color: "#D2E5FF"});
+				if(j != width - 1)
+					e.push({from: coor2id(i,j,height), to: coor2id(i,j+1,height), value: 1, color: "#D2E5FF"});
+				edges = edges.concat(e);
+				var val = 0;
+				for(var v = 0; v < e.length; v++) val += e[v].value;
+				nodes.push({id: coor2id(i,j,height), value: Math.log(v + 1), title: (v + 1), label: "["+i+","+j+"]", x: i * i * 30, y: j * j *30 });
+	      	}
 	      }
+	      console.log(nodes);
 	      var options = {
 	        nodes: {
         		fixed: true,
 				shape: 'dot',
 				scaling:{
+					min: 10,
+					max: 15,
 					label: {
-						min:1,
-						max:10
+						min:25,
+						max:25
 					}
 				}
 	        },
 	        layout: {randomSeed:0}
 	      };
+	      var data = {
+	        nodes: nodes,
+	        edges: edges
+	      };
 	      network = new vis.Network(container, data, options);
 	    }
-	    $("#mynetwork").css({"height": $(document).height(), "width": $(document).width()});
+	    $(".full-height").css({ "height": $(document).height() }).fadeIn(1000);
+	    $('#log').css({ "margin-top":  $(document).height() -  $("#log").height() - 180 }).fadeIn(1000);
 	    draw();
 	});
 </script>
-<div id="mynetwork" style="border:1px solid #000"></div>
 </body>
 </html>
