@@ -25,6 +25,7 @@ protected:
         BRANCH_LEFT = 2,
         BRANCH_UP   = 3
     } branch;
+public:
     typedef enum flow_stat {
         STOP,
         START,
@@ -50,15 +51,21 @@ public:
     void flow_stop();
     void flow_start();
     size_t add_cars(size_t count);
-    inline void flow_pause() { this->_flow_stat = PAUSE; }
+    inline size_t height() const { return this->_height; }
+    inline size_t weight() const { return this->_weight; }
     inline void time_step(float ts) { this->_time_step = ts; }
     inline float time_step() const { return this->_time_step; }
     inline size_t get_size_cars() const { return this->_car_no; }
+    inline flow_stat get_stat_flow() const { return this->_flow_stat; }
     inline size_t get_size_blocks() const { return this->_height * this->_weight; }
     inline float cluster_delay() const { return this->_cluster_delay_milliseconds; }
+    inline void flow_pause() { if(this->_flow_stat == START) this->_flow_stat = PAUSE; }
     inline size_t get_size_cluster_street() const { return this->_cluster_streets.size(); }
+    inline const vector<vector<street_ptr>>& cluster_streets() { return this->_cluster_streets; }
     inline void cluster_delay(float milliseconds) { this->_cluster_delay_milliseconds = milliseconds; }
     inline size_t get_size_streets() const { if(!this->_cluster_streets.size()) return 0; return (this->_cluster_streets.size() - 1) * CONST_CLUSTER_STREET_MAX_SIZE + this->_cluster_streets.back().size(); }
 };
+
+string to_string(city::flow_stat);
 
 #endif // CITY_H

@@ -34,8 +34,8 @@
 	}
 	$(document).ready(function(){
 		data = {
-			status: "check",
-			last_cal: 'FUCKU'
+			op: "help",
+			action: "PAUSE"
 		};
     	$.ajax({
 			url: "http://127.0.0.1:2004",
@@ -48,7 +48,6 @@
 				console.log([234, 5, 5, 5])
 			}
 		});
-		return;
 
 		var nodes = null;
 	    var edges = null;

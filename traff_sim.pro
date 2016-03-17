@@ -5,7 +5,7 @@ TEMPLATE = app
 TARGET = traff_sim
 CONFIG += c++11
 DEFINES += QTCTREATOR
-LIBS += -lpthread -lboost_system -lboost_thread -lboost_regex
+LIBS += -lpthread -lboost_system -lboost_thread
 
 INCLUDEPATH += . test vendors/jsoncons/src
 

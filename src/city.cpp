@@ -240,3 +240,12 @@ traffic_factor_report city::traffic_report(bool use_cache) const {
     }
     return tfr;
 }
+
+string to_string(city::flow_stat fs) {
+    switch(fs) {
+        case city::STOP:  return "STOP";
+        case city::START: return "START";
+        case city::PAUSE: return "PAUSE";
+        default: throw runtime_error("invalid flow state!");
+    }
+}
