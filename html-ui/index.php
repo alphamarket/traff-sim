@@ -95,8 +95,8 @@
 		</div>
 		<div class="clearfix"></div>
 		</fieldset>
-		<div id="log" class="pull-left col-md-12" style='margin-top: -200px'>
-			<h4 class='text-muted section'>Logs</h4>
+		<div id="log" class="col-md-12">
+			<h4 class='text-muted section' style='margin-left: -15px'>Logs</h4>
 			<ul class='list-group' id="log-content"></ul>
 		</div>
 	</div>
@@ -157,6 +157,7 @@
 		return true;
 	};
 	function draw(grid) {
+		console.log(grid);
 		if(grid.grid_size === undefined || grid.grid_size.length !== 2) throw "Invalid grid info!";
 		// Instantiate our network object.
 		var container = document.getElementById('mynetwork');
@@ -200,7 +201,7 @@
 		};
 		return new vis.Network(container, data, options);
 	};
-	function update_info(do_draw) {
+	function update_info(callback) {
 		var do_draw = typeof do_draw !== 'undefined' ?  do_draw : false;
 		make_request(data_get_info(), function(info) {
 			if(!is_failed_data(info, true)) {
@@ -210,7 +211,7 @@
 				$("#grid-time-step").val(Math.round(info.time_step*100)/100).data('oldval', info.time_step);
 				$("#grid-cluster-delay").val(Math.round(info.cluster_delay*100)/100).data('oldval', info.cluster_delay);
 				$("#grid-state-"+info.flow).prop("checked", true);
-				if(do_draw) network = draw(info);
+				if(callback !== undefined) callback(info);
 			}
 		});
 	};
@@ -228,7 +229,7 @@
 							$("#grid-cluster-delay").fadeOut(500).fadeIn(1000);
 							$("#grid-add-cars").fadeOut(500).val(0).fadeIn(1000);
 							$("#grid-state").fadeOut(500).fadeIn(1000);
-							log("<b>Settings updated successfully!</b>", 'success');
+							log("Settings updated successfully!", 'success');
 							update_info();
 						}
 					});
@@ -243,7 +244,7 @@
 						$("#grid-cluster-delay").val()), 
 					function(data) {
 						if(!is_failed_data(data, true)) {
-							log("<b>Settings updated successfully!</b>", 'success');
+							log("Settings updated successfully!", 'success');
 							setTimeout(function() {
 								make_request(
 									data_setting(
@@ -263,7 +264,21 @@
 		$('.only-number-allowed').keypress(function(e) { return e.charCode >= 48 && e.charCode <= 57; });
 
 		var network = [];
-		update_info(true);
+		update_info(function (info){
+			log("Valid communication with server stablished!", "success");
+			log("Retrieving city's information.....");
+			make_request(
+				data_feedback(),
+				function(data) {
+					if(!is_failed_data(data)) {
+						info.feed = data;
+						$("#log-content log").first().remove();
+						log("Building city structure!");
+						network = draw(info);
+						log("City structure created successfully!", 'success');
+					}
+				});
+		});
 	});
 </script>
 </body>
