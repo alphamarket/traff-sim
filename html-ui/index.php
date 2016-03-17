@@ -7,6 +7,7 @@
     <meta content="width=device-width, initial-scale=1" name="viewport">
     <title>Traffic Control Demo</title>
     <!-- Bootstrap Core CSS -->
+	<link href="vis/vis.css" rel="stylesheet" type="text/css">
     <link href="/statics/css/bootstrap.min.css" rel="stylesheet">
     <link href="/statics/css/font-awesome.min.css" rel="stylesheet" >
     <link href="/statics/css/scrolling-nav.min.css" rel="stylesheet">
@@ -106,115 +107,8 @@
 <script src="/statics/js/jquery.min.js" type="text/javascript"></script> 
 <script src="/statics/js/bootstrap.min.js" type="text/javascript"></script> 
 <script type="text/javascript" src="vis/vis.js"></script>
-<link href="vis/vis.css" rel="stylesheet" type="text/css" />
-   
+<script type="text/javascript" src="index.js"></script>
 <script type="text/javascript">
-	function log(data, type) {
-		$("#log-content")
-			.prepend('<log class="list-group-item list-group-item-'+type+'"><i class="fa fa-angle-double-right"></i> '+data+'</li>');
-	};
-	function data_help() 
-		{ return {op: "help"}; };
-	function data_feedback() 
-		{ return { op: "feedback" }; };
-	function data_get_info() 
-		{ return { op: "get_info" }; };
-	function data_init(_size, _cars_no, _time_step, _cluster_delay) { 
-		return {
-	 		op: "init",
-	 		params: {
-		 		size: _size,
-		 		cars_no: _cars_no,
-		 		time_step: _time_step,
-		 		cluster_delay: _cluster_delay
-	 		}
-		}; 
-	};
-	function data_setting(key, value) { 
-		var key = typeof key !== 'undefined' ?  key : [];
-		var value = typeof value !== 'undefined' ?  value : [];
-		if(key.length !== value.length) throw "invalid input!"; 
-		return { op: "setting", set: { key: key, value: value } }; 
-	};
-	function make_request(data, succ_callback) {
-    	$.ajax({
-			url: "net.php",
-			method: "POST",
-			data: data,
-			cache: false,
-			dataType: 'json',
-			success: succ_callback,
-			complete: function() { $('#log-content .trans-log').parent().remove(); },
-			beforeSend: function() { log("<span class='trans-log'>Transmitting with server.....</span>"); }
-		}).fail(function( xhr, textStatus ) {
-			log('Error '+xhr.status+' while trying to connect with server!', 'danger');
-		}).always(function() { $('#log-spin').fadeIn(); });
-	};
-	function is_failed_data(data, do_log) { 
-		var do_log = typeof do_log !== 'undefined' ?  do_log : false;
-		if(data.result === undefined || data.result !== "failed") return false;
-		if(do_log) log("<b>Error " + data.code + ": " + data.detail + "</b>", "danger"); 
-		return true;
-	};
-	function draw(grid) {
-		console.log(grid);
-		if(grid.grid_size === undefined || grid.grid_size.length !== 2) throw "Invalid grid info!";
-		// Instantiate our network object.
-		var container = document.getElementById('mynetwork');
-		var z = [];
-		nodes = [];
-		edges = [];
-		var coor2id = function(x, y, x_max) { return x * x_max + y; };
-		var height = grid.grid_size[0];
-		var width = grid.grid_size[1];
-		for(var i = 0; i < height; i++) {
-			for(var j = 0; j < width; j++) {
-				e = [];
-				if(i != height - 1)
-					e.push({from: coor2id(i,j,height), to: coor2id(i+1,j,height), value: 1, color: "#D2E5FF"});
-				if(j != width - 1)
-					e.push({from: coor2id(i,j,height), to: coor2id(i,j+1,height), value: 1, color: "#D2E5FF"});
-				edges = edges.concat(e);
-				var val = 0;
-				for(var v = 0; v < e.length; v++) val += e[v].value;
-				nodes.push({id: coor2id(i,j,height), value: Math.log(v + 1), title: (v + 1), label: "["+i+","+j+"]", x: i * i * 30, y: j * j *30 });
-			}
-		}
-		var options = {
-			nodes: {
-				fixed: true,
-				shape: 'dot',
-				scaling:{
-					min: 10,
-					max: 15,
-					label: {
-						min:25,
-						max:25
-					}
-				}
-			},
-			layout: {randomSeed:0}
-		};
-		var data = {
-			nodes: nodes,
-			edges: edges
-		};
-		return new vis.Network(container, data, options);
-	};
-	function update_info(callback) {
-		var do_draw = typeof do_draw !== 'undefined' ?  do_draw : false;
-		make_request(data_get_info(), function(info) {
-			if(!is_failed_data(info, true)) {
-				$("#grid-height").val(info.grid_size[0]).data('oldval', info.grid_size[0]);
-				$("#grid-width").val(info.grid_size[1]).data('oldval', info.grid_size[1]);
-				$("#grid-car-no").val(info.car_count).data('oldval', info.car_count);
-				$("#grid-time-step").val(Math.round(info.time_step*100)/100).data('oldval', info.time_step);
-				$("#grid-cluster-delay").val(Math.round(info.cluster_delay*100)/100).data('oldval', info.cluster_delay);
-				$("#grid-state-"+info.flow).prop("checked", true);
-				if(callback !== undefined) callback(info);
-			}
-		});
-	};
 	$(document).ready(function(){
 		$("#update-init").click(function(){
 			if($("#grid-height").val() == $("#grid-height").data('oldval') && $("#grid-width").val() == $("#grid-width").data('oldval')) {
@@ -263,7 +157,7 @@
 	    $('#log').css({ "margin-top":  $(document).height() -  $("#log").height() - 180 }).fadeIn(100, function() { $('#log-spin').hide(); });
 		$('.only-number-allowed').keypress(function(e) { return e.charCode >= 48 && e.charCode <= 57; });
 
-		var network = [];
+		var grid = [];
 		update_info(function (info){
 			log("Valid communication with server stablished!", "success");
 			log("Retrieving city's information.....");
@@ -274,7 +168,7 @@
 						info.feed = data;
 						$("#log-content log").first().remove();
 						log("Building city structure!");
-						network = draw(info);
+						grid = draw_grid('mynetwork', info);
 						log("City structure created successfully!", 'success');
 					}
 				});
