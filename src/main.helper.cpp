@@ -8,6 +8,7 @@
 #include <atomic>
 #include <functional>
 #include <boost/thread.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
 #define CONST_CITY_WIDTH  10
@@ -104,10 +105,11 @@ string thread_proxy_ui_process_command(const jsoncons::json& json) {
                 if(params["size"].size() != 2)
                     invalid_input();
                 delete _city;
-                _city = new city(params["size"][0].as<size_t>(), params["size"][1].as<size_t>());
-                _city->add_cars(params["cars_no"].as<size_t>());
-                _city->time_step(params["time_step"].as<float>());
-                _city->cluster_delay(params["cluster_delay"].as<float>());
+                auto size = params["size"].as<vector<string>>();
+                _city = new city(boost::lexical_cast<size_t>(size[0]), boost::lexical_cast<size_t>(size[1]));
+                _city->add_cars(boost::lexical_cast<size_t>(params["cars_no"].as<string>()));
+                _city->time_step(boost::lexical_cast<float>(params["time_step"].as<string>()));
+                _city->cluster_delay(boost::lexical_cast<float>(params["cluster_delay"].as<string>()));
                 json jj;
                 jj["op"] = j["op"];
                 jj["result"] = j["params"];
