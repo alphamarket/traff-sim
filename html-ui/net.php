@@ -1,46 +1,37 @@
 <?php
 
+require_once("utilities.php");
+
 ini_set('max_execution_time', 0);
 
-function fail($code, $detail) {
-    die(json_encode([
-    		"code" => $code,
-    		"result" => "failed",
-    		"detail" => $detail
-    	]));
-}
+defined(SERVER_PORT) || define("SERVER_PORT", 2004);
+defined(DEBUG_LEVEL) || define("DEBUG_LEVEL", "DEBUG");
+defined(SERVER_ADDRESS) || define("SERVER_ADDRESS", "127.0.0.1");
 
-$addr = "127.0.0.12";
-$port = 2004;
-
-if (($socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) === false) fail(socket_last_error(), "Unable to create socket!");
-if(socket_connect($socket, $addr, $port) === false) fail(socket_last_error(), "Unable to connect to server!");
+if(DEBUG_LEVEL !== "DEBUG" && $_SERVER['REQUEST_METHOD'] !== "POST") _fail(403, "Invalid request!");
 
 function send_data(&$socket, $msg, $append_eof = true) {
 	$flag = 0;
 	if($append_eof) $msg .= "\n";
-	if(!is_string($msg)) fail(500.101, "Invalid data type!");
+	if(!is_string($msg)) _fail(500.101, "Invalid data type!");
 	socket_send($socket, $msg, strlen($msg), $flag);
 }
 
-$data_out = [
-	"op" => "help",
-	"params" =>  [
-		"size" =>  [100, 100],
-		"car_no" =>  10,
-		"time_step" =>  1,
-		"cluster_delay" =>  10
-	]
-];
+$data_out = $_REQUEST;
+
+if(!count($data_out)) _fail(500.103, "Invalid data!");
+
+if(($socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) === false) _fail(socket_last_error(), "Unable to create socket!");
+
+if(socket_connect($socket, SERVER_ADDRESS, SERVER_PORT) === false) _fail(socket_last_error(), "Unable to connect to server!");
+
 
 send_data($socket, json_encode($data_out));
 
-$data_in = json_decode(socket_read($socket, 1024 * 1024 * 10 /* 10 MB */));
+$data_in = socket_read($socket, 1024 * 1024 * 10 /* 10 MB */);
 
 socket_close($socket);
 
-if(!$data_in) if(!is_string($msg)) fail(500.102, "Invalid response from server!");
+if(!strlen($data_in)) _fail(500.104, "Invalid response from server!");
 
-echo "<pre>";
-print_r($data_in);
-echo "</pre>";
+die($data_in);

@@ -1,3 +1,4 @@
+<?php require_once("utilities.php"); ?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -56,24 +57,49 @@
 	function echo(str) {
 		document.write(str);
 	}
-	$(document).ready(function(){
-		data = {
-			op: "init",
-			params: {
-				size: [100,100],
-				car_no: 10,
-				time_step: 1,
-				cluster_delay: 10
-			}
+	$(document).ready(function(){<?php // [ "get_info", "init", "feedback", "action", "help" ]; ?>
+		var data_help 		= function() 
+			{ return {op: "help"}; };
+		var data_feedback 	= function() 
+			{ return { op: "feedback" }; };
+		var data_get_info 	= function() 
+			{ return { op: "get_info" }; };
+		var data_init     	= function(_size, _cars_no, _time_step, _cluster_delay) { 
+			return {
+		 		op: "init",
+		 		params: {
+			 		size: _size,
+			 		cars_no: _cars_no,
+			 		time_step: _time_step,
+			 		cluster_delay: _cluster_delay
+		 		}
+			}; 
 		};
+		var data_action 	= function(action, value) { 
+			var value = typeof value !== 'undefined' ?  value : [];
+			return { op: "action", action: action, value: value }; 
+		};
+		var e = [ <?php foreach ($ops as $value) echo "'", _hash($value), "', "; ?> ];
+		var p = [ <?php
+			foreach($ops as $value) {
+				switch($value) {
+					case "help":
+					case "get_info":
+					case "feedback": echo "[],"; break;
+					case "init": echo "[-1,-1,-1,-1],"; break;
+					case "action": echo "[-1,-1,-1],"; break;
+					default: _fail(500.001, "invalid value!");
+				}
+			}
+		?> ];
     	$.ajax({
-			url: "http://127.0.0.1:2004",
+			url: "net.php",
 			method: "POST",
-			data: JSON.stringify(data), 
+			data: data_init([4,4], 3,1,10),
 			cache: false,
 			success: function(data) {
 				console.log("FUCK");
-				$("#log").append(JSON.stringify(data));
+				$("#log").append(data);
 				console.log([234, 5, 5, 5])
 			}
 		});
