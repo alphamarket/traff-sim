@@ -133,6 +133,7 @@ function draw_grid(elem, grid) {
 			if(grid.feed[i] === undefined) continue;
 			// fetch the streets bound to this point
 			var s = grid.feed[i][j];
+			nodes[nodes_id[i][j]].edges = [];
 			// foreach street => create an edges
 			for(var k = 0; s !== undefined && k < s.length; k++) {
 				// the tail's join't location to bound
@@ -142,6 +143,8 @@ function draw_grid(elem, grid) {
 				nodes[nodes_id[i][j]].value += s[k].traffic_weight;
 				// create the edge
 				edges.push({from: nodes_id[i][j], to: nodes_id[t[0]][t[1]], value: s[k].traffic_weight, title: s[k].traffic_weight, tag: s[k], color: "#D2E5FF"});
+				// make a reference to the created edge to be accessed via the node instance 
+				nodes[nodes_id[i][j]].edges.push(edges[edges.length-1]);
 			}
 		}
 	}
@@ -168,8 +171,48 @@ function draw_grid(elem, grid) {
 		nodes: new vis.DataSet(nodes),
 		edges: new vis.DataSet(edges)
 	};
-	// return the network and it's nodes and edges
-	return { network: new vis.Network(document.getElementById(elem), data, options), nodes: data.nodes, edges: data.edges };
+	// return the the grid object
+	return { 
+		network: new vis.Network(document.getElementById(elem), data, options), 
+		nodes: data.nodes, 
+		edges: data.edges, 
+		nodes_id: nodes_id,
+		getNodeID: function(coord) { 
+			if(coord.length !== 2) throw "the `coord` need to be a 2D coordination instance, i.e [x,y]."; 
+			return this.nodes_id[coord[0]][coord[1]]; 
+		},
+		getEdgeID: function(coord) {
+			if(coord.length !== 3) throw "the `coord` need to be a 3D coordination + direction instance, i.e [x,y,('R','D')].";
+			// get the target node
+			var node = this.nodes.get(this.getNodeID(coord.slice(0,2)));
+			// iterate over the node's inbound edges
+			for(var i = 0; i < node.edges.length; i++)
+				// if matched with the direction passed?
+				if(node.edges[i].tag.dir === coord[2])
+					// update it
+					return node.edges[i].id;
+			// not found!
+			return null;
+		},
+		getNode: function(coord) { return this.nodes.get(this.getNodeID(coord)); },
+		getEdge: function(coord) { return this.edges.get(this.getEdgeID(coord)); },
+		updateNode: function(coord, opt) {
+			// compute the id
+			var set = { id:  this.getNodeID(coord) };
+			// extent the setting
+			jQuery.extend(set, opt);
+			// update it
+			return this.nodes.update(set);	
+		},
+		updateEdge: function(coord, opt) {
+			// compute the id
+			var set = { id:  this.getEdgeID(coord) };
+			// extent the setting
+			jQuery.extend(set, opt);
+			// update it
+			return this.edges.update(set);
+		}
+	};
 };
 // updates the info values
 function update_info(callback) {
