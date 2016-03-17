@@ -95,7 +95,7 @@
 		</div>
 		<div class="clearfix"></div>
 		</fieldset>
-		<div id="log" style=''>
+		<div id="log" class="pull-left col-md-12" style='margin-top: -200px'>
 			<h4 class='text-muted section'>Logs</h4>
 			<ul class='list-group' id="log-content"></ul>
 		</div>
@@ -144,9 +144,11 @@
 			cache: false,
 			dataType: 'json',
 			success: succ_callback,
+			complete: function() { $('#log-content .trans-log').parent().remove(); },
+			beforeSend: function() { log("<span class='trans-log'>Transmitting with server.....</span>"); }
 		}).fail(function( xhr, textStatus ) {
 			log('Error '+xhr.status+' while trying to connect with server!', 'danger');
-		});
+		}).always(function() { $('#log-spin').fadeIn(); });
 	};
 	function is_failed_data(data, do_log) { 
 		var do_log = typeof do_log !== 'undefined' ?  do_log : false;
@@ -205,8 +207,8 @@
 				$("#grid-height").val(info.grid_size[0]).data('oldval', info.grid_size[0]);
 				$("#grid-width").val(info.grid_size[1]).data('oldval', info.grid_size[1]);
 				$("#grid-car-no").val(info.car_count).data('oldval', info.car_count);
-				$("#grid-time-step").val(info.time_step).data('oldval', info.time_step);
-				$("#grid-cluster-delay").val(info.cluster_delay).data('oldval', info.cluster_delay);
+				$("#grid-time-step").val(Math.round(info.time_step*100)/100).data('oldval', info.time_step);
+				$("#grid-cluster-delay").val(Math.round(info.cluster_delay*100)/100).data('oldval', info.cluster_delay);
 				$("#grid-state-"+info.flow).prop("checked", true);
 				if(do_draw) network = draw(info);
 			}
@@ -215,45 +217,49 @@
 	$(document).ready(function(){
 		$("#update-init").click(function(){
 			if($("#grid-height").val() == $("#grid-height").data('oldval') && $("#grid-width").val() == $("#grid-width").data('oldval')) {
+				// the grid size remained unchanged, only update some settings
 				make_request(
 					data_setting(
-						["time_step", "cluster_delay", "add_cars"],
-						[$("#grid-time-step").val(), $("#grid-cluster-delay").val(), $("#grid-add-cars").val()]), 
+						["flow", "time_step", "cluster_delay", "add_cars"],
+						[$("input[name=grid-state]:checked").val(), $("#grid-time-step").val(), $("#grid-cluster-delay").val(), $("#grid-add-cars").val()]), 
 					function(data) {
-						console.log("FC");
 						if(!is_failed_data(data, true)) {
 							$("#grid-time-step").fadeOut(500).fadeIn(1000);
 							$("#grid-cluster-delay").fadeOut(500).fadeIn(1000);
 							$("#grid-add-cars").fadeOut(500).val(0).fadeIn(1000);
+							$("#grid-state").fadeOut(500).fadeIn(1000);
 							log("<b>Settings updated successfully!</b>", 'success');
 							update_info();
 						}
 					});
 
 			} else {
-				console.log("WHY?");
 				// since the grid's size changed, we need to re-init the grid
 				make_request(
 					data_init(
 						[$("#grid-height").val(), $("#grid-width").val()], 
-						$("#grid-add-car").val(), 
+						$("#grid-add-cars").val(), 
 						$("#grid-time-step").val(),
 						$("#grid-cluster-delay").val()), 
 					function(data) {
-						console.log(data);
 						if(!is_failed_data(data, true)) {
-							make_request(data_setting(["flow"], [$("input[name=grid-state]:checked").val()], function(data) {
-								if(!is_failed_data(data, true)) {
-									log("<b>Settings updated successfully!</b>", 'success');
-									update_info(true);
-								}
-							}));
+							log("<b>Settings updated successfully!</b>", 'success');
+							setTimeout(function() {
+								make_request(
+									data_setting(
+										["flow"], 
+										[$("input[name=grid-state]:checked").val()]), 
+									function(data) {
+										if(!is_failed_data(data, true))
+											window.location.reload(true);
+									});
+							}, 200);
 						}
 					});
 			}
 		});
 	    $(".full-height").css({ "height": $(document).height() }).fadeIn(1000);
-	    $('#log').css({ "margin-top":  $(document).height() -  $("#log").height() - 180 }).fadeIn(1000);
+	    $('#log').css({ "margin-top":  $(document).height() -  $("#log").height() - 180 }).fadeIn(100, function() { $('#log-spin').hide(); });
 		$('.only-number-allowed').keypress(function(e) { return e.charCode >= 48 && e.charCode <= 57; });
 
 		var network = [];
