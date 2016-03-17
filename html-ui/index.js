@@ -34,7 +34,7 @@ function make_request(data, succ_callback) {
 		dataType: 'json',
 		success: succ_callback,
 		complete: function() { $('#log-content .trans-log').parent().remove(); },
-		beforeSend: function() { log("<span class='trans-log'>Transmitting with server.....</span>"); }
+		beforeSend: function() { log("<span class='trans-log'>Talking to server...</span>"); }
 	}).fail(function( xhr, textStatus ) {
 		log('Error '+xhr.status+' while trying to connect with server!', 'danger');
 	}).always(function() { $('#log-spin').fadeIn(); });
@@ -45,7 +45,7 @@ function is_failed_data(data, do_log) {
 	if(do_log) log("<b>Error " + data.code + ": " + data.detail + "</b>", "danger"); 
 	return true;
 };
-function makeArray(d1, d2) { var arr = new Array(d1), i, l; for(i = 0, l = d2; i < l; i++) arr[i] = new Array(d1); return arr; };
+function makeArray(d1, d2) { var arr = new Array(d1), i, l; for(i = 0, l = d1; i < l; i++) arr[i] = new Array(d2); return arr; };
 function convert_feed(grid_size, feed) {
 	if(feed.clusters === undefined || !feed.clusters.length) return [];
 	c = [];
@@ -66,33 +66,25 @@ function convert_feed(grid_size, feed) {
 function draw_grid(elem, grid) {
 	if(grid.grid_size === undefined || grid.grid_size.length !== 2) throw "Invalid grid info!";
 
-	nodes = [];
-	edges = [];
+	var nodes = []; 
+	var edges = [];
 
 	var h = grid.grid_size[0], w = grid.grid_size[1];
 	grid.feed = convert_feed(grid.grid_size, grid.feed);
-	console.log(grid.feed);
 	var coor2id = function(x, y, x_max) { return x * x_max + y; };
-	for(var i = 0; i < h; i++) { 
+	var nodes_id = makeArray(h, w);
+	for(var i = 0, n = 0; i < h; i++) { 
 		for(var j = 0; j < w; j++) {
-			e = [];
-			var s = grid.feed[i][j];
-			node = {
-				id: coor2id(i,j,h),
+			var node = {
+				id: n,
 				value: 1,
 				title: "["+i+","+j+"]",
-				streets: s,
+				streets: (grid.feed[i] === undefined || grid.feed[i][j] === undefined ? [] : grid.feed[i][j]),
 				x: i,
 				y: j
 			};
-			for(var k = 0; s !== undefined && k < s.length; k++) {
-				target = [i + 1, j];
-				if(s[k].dir == "R") target = [i, j + 1];
-				node.value += s[k].capacity;
-				edges.push({from: coor2id(i,j,h), to: coor2id(target[0],target[1],h), value: s[k].capacity, tag: s[k], color: "#D2E5FF"});
-			}
 			if(j != 0) {
-				var prev = nodes[coor2id(i, j-1,h)];
+				var prev = nodes[nodes_id[i][j-1]];
 				var prev_s = prev.streets;
 				for (var k = 0; k < prev_s.length; k++) {
 					if(prev_s[k].dir === 'R') {
@@ -102,7 +94,7 @@ function draw_grid(elem, grid) {
 				}
 			}
 			if(i != 0) {
-				var prev = nodes[coor2id(i - 1, j,h)];
+				var prev = nodes[nodes_id[i-1][j]];
 				var prev_s = prev.streets;
 				for (var k = 0; k < prev_s.length; k++) {
 					if(prev_s[k].dir === 'D') {
@@ -111,7 +103,21 @@ function draw_grid(elem, grid) {
 					}
 				}
 			}
+			nodes_id[i][j] = n++;
 			nodes.push(node);
+		}
+	}
+
+	for(var i = 0, n = 0; i < h; i++) { 
+		for(var j = 0; j < w; j++) {
+			if(grid.feed[i] === undefined) continue;
+			var s = grid.feed[i][j];
+			for(var k = 0; s !== undefined && k < s.length; k++) {
+				var t = [i + 1, j];
+				if(s[k].dir == "R") t = [i, j + 1];
+				nodes[nodes_id[i][j]].value += s[k].capacity;
+				edges.push({from: nodes_id[i][j], to: nodes_id[t[0]][t[1]], value: s[k].capacity, tag: s[k], color: "#D2E5FF"});
+			}
 		}
 	}
 	var options = {
