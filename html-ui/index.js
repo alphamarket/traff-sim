@@ -57,8 +57,8 @@ function is_failed_data(data, do_log) {
 };
 // create a 2D array
 function makeArray(d1, d2) { var arr = new Array(d1), i, l; for(i = 0, l = d1; i < l; i++) arr[i] = new Array(d2); return arr; };
-// get coordinate of a street based on it's naming
-function get_street_coord(name) { var o = (/\[\s*(\d+)\s*,\s*(\d+)\s*\].*-(\w)/g).exec(name); if(o.length < 4) throw "invalid name!"; return [parseInt(o[1]), parseInt(o[2]), o[3]]; }
+// get coordinate of a street
+function get_street_coord(s) { var o = (/\[\s*(\d+)\s*,\s*(\d+)\s*\].*-(\w)/g).exec(s.name); if(o.length < 4) throw "invalid name!"; return [parseInt(o[1]), parseInt(o[2]), o[3]]; }
 // converts a feed instance into processable structure
 function convert_feed(grid_size, feed) {
 	if(feed.clusters === undefined || !feed.clusters.length) return [];
@@ -68,7 +68,7 @@ function convert_feed(grid_size, feed) {
 	for (var i = 0; i < feed.length; i++) c = c.concat(feed[i]);
 	for (var i = 0; i < c.length; i++) {
 		var s = c[i];
-		var loc = get_street_coord(s.name);
+		var loc = get_street_coord(s);
 		var h = loc[0], w = loc[1];
 		s.loc = [h, w];
 		s.dir = loc[2];
@@ -112,6 +112,8 @@ function draw_grid(elem, grid) {
 						node.x = prev.x + 300 * Math.log(prev_s[k].length);
 						// also count the incommig traffics to current joint
 						node.value += prev_s[k].traffic_weight;
+						// consider this street too
+						node.streets.push(prev_s[k]);
 						break;
 					}
 				}
@@ -124,6 +126,8 @@ function draw_grid(elem, grid) {
 						node.y = prev.y + 300 * Math.log(prev_s[k].length); 
 						// also count the incommig traffics to current joint
 						node.value += prev_s[k].traffic_weight;
+						// consider this street too
+						node.streets.push(prev_s[k]);
 						break;
 					}
 				}
@@ -144,8 +148,11 @@ function draw_grid(elem, grid) {
 			// foreach street => create an edges
 			for(var k = 0; s !== undefined && k < s.length; k++) {
 				// the tail's join't location to bound
-				var t = [i + 1, j];
+				var t = [i + 1, j]
 				if(s[k].dir == "R") t = [i, j + 1];
+				// make sure no out sider
+				var cst = get_street_coord(s[k]);
+				if(cst[0] != i || cst[1] != j) continue;
 				// increment the traffic weight of current joint by current street's traffic weight  
 				nodes[nodes_id[i][j]].value += s[k].traffic_weight;
 				// create the edge
