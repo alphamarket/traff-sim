@@ -44,8 +44,7 @@
 </style>
 
 <div class="row">
-  	<div id="mynetwork" class="full-height col-md-8" style="border-right:1px solid #ddd">
-	</div>
+  	<div id="mynetwork" class="full-height col-md-8" style="border-right:1px solid #ddd"></div>
 	<div id="sidebar" class="full-height col-md-4"  style="padding: 20px; padding-right: 30px; position: relative; min-height: 100px">
 		<h2 class="pull-left">TrafficMeter</h2>
 		<h3 class="pull-right"><small>developed by <a href="http://github.com/noise2" target="__blank"><span class='glyphicon glyphicon-new-window'></span> Dariush Hasanpoor</a></small></h3>
