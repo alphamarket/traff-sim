@@ -177,6 +177,7 @@ function draw_grid(elem, grid) {
 		nodes: data.nodes, 
 		edges: data.edges, 
 		nodes_id: nodes_id,
+		size: [h, w],
 		getNodeID: function(coord) { 
 			if(coord.length !== 2) throw "the `coord` need to be a 2D coordination instance, i.e [x,y]."; 
 			return this.nodes_id[coord[0]][coord[1]]; 

@@ -107,7 +107,16 @@
 <script src="/statics/js/bootstrap.min.js" type="text/javascript"></script> 
 <script type="text/javascript" src="vis/vis.js"></script>
 <script type="text/javascript" src="index.js"></script>
+<script type="text/javascript" src="simulate.js"></script>
 <script type="text/javascript">
+	var pool_intervals 	= [];
+	function createInterval(name, callback, interval) { pool_intervals.push({name: name, id: setInterval(callback, interval) }); }
+	function stopInterval(name) { 
+		console.log(pool_intervals);
+		for(var i = 0; i < pool_intervals.length; i++) 
+			if(pool_intervals[i].name === name) 
+				clearInterval(pool_intervals[i].id);
+	}
 	$(document).ready(function(){
 		$("#update-init").click(function(){
 			if($("#grid-height").val() == $("#grid-height").data('oldval') && $("#grid-width").val() == $("#grid-width").data('oldval')) {
@@ -169,22 +178,7 @@
 						log("Building city structure!");
 						grid = draw_grid('mynetwork', info);
 						log("City structure created successfully!", 'success');
-						// (function() {
-							var eid = grid.edges.getIds();
-							var id = Math.floor(Math.random() * grid.nodes.length);
-							var node = grid.nodes.get(0);
-							grid.edges.update({id: node.edges[0].id, color: 'red'});
-							// console.log(grid.updateNode([0,0], {color: 'green'}));
-							console.log(grid.updateEdge([0,0,'R'], {color: 'green'}));
-							console.log(grid.getNode([0,0]));
-							console.log(grid.getEdge([0,0,'D']).color = 'red');
-							console.log(grid.getEdge([0,0,'D']));
-
-							// grid.edges.remove({from: 0, to: 1});
-							console.log(node);
-							// grid.nodes.update([{id: id, value: grid.nodes.get(id).value - 1 }]);
-							// console.log(grid.edges.get({from: 1}));
-						// });
+						simulate(grid);
 					}
 				});
 		});
