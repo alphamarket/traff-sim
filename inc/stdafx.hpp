@@ -54,7 +54,7 @@ using namespace std;
 #endif
 
 #ifndef SIMULATOR_VERSION
-#   define SIMULATOR_VERSION "v0.0.0"
+#   define SIMULATOR_VERSION "v1.0.0"
 #endif
 
 #ifndef FOR
