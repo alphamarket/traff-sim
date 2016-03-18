@@ -56,13 +56,10 @@ void thread_simulation_command_mode() {
     }
 }
 
-void thread_simulation() { return;
+void thread_simulation() {
     boost::thread_group tg;
     tg.create_thread(thread_simulation_command_mode);
-    cout<<_city->add_cars(10)<<endl;
-    cout<<_city->status()<<endl;
-    _city->flow_start();
-    while(!_stop);
+    // the start/stop process of simulation begins with proxy network ui
     tg.join_all();
 }
 
