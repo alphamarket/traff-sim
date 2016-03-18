@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta content="IE=edge" http-equiv="X-UA-Compatible">
     <meta content="width=device-width, initial-scale=1" name="viewport">
-    <title>Traffic Control Demo</title>
+    <title>Particle Meter</title>
     <!-- Bootstrap Core CSS -->
 	<link href="vis/vis.css" rel="stylesheet" type="text/css">
     <link href="/statics/css/bootstrap.min.css" rel="stylesheet">
@@ -46,7 +46,7 @@
 <div class="row">
   	<div id="mynetwork" class="full-height col-md-8" style="border-right:1px solid #ddd"></div>
 	<div id="sidebar" class="full-height col-md-4"  style="padding: 20px; padding-right: 30px; position: relative; min-height: 100px">
-		<h2 class="pull-left">TrafficMeter</h2>
+		<h2 class="pull-left">ParticleMeter</h2>
 		<h3 class="pull-right"><small>developed by <a href="http://github.com/noise2" target="__blank"><span class='glyphicon glyphicon-new-window'></span> Dariush Hasanpoor</a></small></h3>
 		<div class="clearfix"></div>
 		<hr />
@@ -61,11 +61,11 @@
 		  	<input class='col-md-4 form-control' type="number" step='1' min='0' max='100' id="grid-width" value="0"></input>
 		</div>
 		<div class="form-group col-md-6">
-		  <label for="grid-width">Cars#</label>
+		  <label for="grid-width">Particles#</label>
 		  	<input class='col-md-4 form-control' type="number" min='0' step='10' id="grid-car-no" value="0" disabled></input>
 		</div>
 		<div class="form-group col-md-6">
-		  <label for="grid-width">Add Cars</label>
+		  <label for="grid-width">Add Particles</label>
 		  	<input class='col-md-4 form-control' type="number" min='0' step='10' id="grid-add-cars" value="0"></input>
 		</div>
 		<div class="form-group col-md-6">
@@ -91,7 +91,8 @@
 	    	</div>
 		</div>
 		<div class="form-group col-md-6" style='margin-top: 0 -50px'>
-			<button class='btn btn-success pull-right' id='update-init'><span class='fa fa-upload'></span> Update</button>
+			<button class='btn btn-success pull-right' id='setting-update'><span class='fa fa-upload'></span> Update</button>
+			<button class='btn btn-warning pull-left' id='setting-reset'><span class='fa fa-warning'></span> Reset</button>
 		</div>
 		<div class="clearfix"></div>
 		</fieldset>
@@ -120,48 +121,58 @@
 				clearInterval(pool_intervals[i].id);
 	}
 	$(document).ready(function(){
-		$("#update-init").click(function(){
-			if($("#grid-height").val() == $("#grid-height").data('oldval') && $("#grid-width").val() == $("#grid-width").data('oldval')) {
+		function setting_update() {
+			make_request(
+				data_setting(
+					["flow", "time_step", "cluster_delay", "add_cars"],
+					[$("input[name=grid-state]:checked").val(), $("#grid-time-step").val(), $("#grid-cluster-delay").val(), $("#grid-add-cars").val()]), 
+				function(data) {
+					if(!is_failed_data(data, true)) {
+						$("#grid-time-step").fadeOut(500).fadeIn(1000);
+						$("#grid-cluster-delay").fadeOut(500).fadeIn(1000);
+						$("#grid-add-cars").fadeOut(500).val(0).fadeIn(1000);
+						$("#grid-state").fadeOut(500).fadeIn(1000);
+						log("Settings updated successfully!", 'success');
+						update_info();
+					}
+				});
+		}
+		function setting_reset() {
+			make_request(
+				data_init(
+					[$("#grid-height").val(), $("#grid-width").val()], 
+					$("#grid-add-cars").val(), 
+					$("#grid-time-step").val(),
+					$("#grid-cluster-delay").val()), 
+				function(data) {
+					if(!is_failed_data(data, true)) {
+						log("Settings updated successfully!", 'success');
+						setTimeout(function() {
+							make_request(
+								data_setting(
+									["flow"], 
+									[$("input[name=grid-state]:checked").val()]), 
+								function(data) {
+									if(!is_failed_data(data, true))
+										window.location.reload(true);
+								});
+						}, 200);
+					}
+				});
+		}
+		$("#setting-reset").click(function() {
+			var b = $("#grid-add-cars").val();
+			$("#grid-add-cars").val(0);
+			setting_reset();
+			$("#grid-add-cars").val(b);
+		});
+		$("#setting-update").click(function(){
+			if($("#grid-height").val() == $("#grid-height").data('oldval') && $("#grid-width").val() == $("#grid-width").data('oldval'))
 				// the grid size remained unchanged, only update some settings
-				make_request(
-					data_setting(
-						["flow", "time_step", "cluster_delay", "add_cars"],
-						[$("input[name=grid-state]:checked").val(), $("#grid-time-step").val(), $("#grid-cluster-delay").val(), $("#grid-add-cars").val()]), 
-					function(data) {
-						if(!is_failed_data(data, true)) {
-							$("#grid-time-step").fadeOut(500).fadeIn(1000);
-							$("#grid-cluster-delay").fadeOut(500).fadeIn(1000);
-							$("#grid-add-cars").fadeOut(500).val(0).fadeIn(1000);
-							$("#grid-state").fadeOut(500).fadeIn(1000);
-							log("Settings updated successfully!", 'success');
-							update_info();
-						}
-					});
-
-			} else {
+				setting_update()
+			else 
 				// since the grid's size changed, we need to re-init the grid
-				make_request(
-					data_init(
-						[$("#grid-height").val(), $("#grid-width").val()], 
-						$("#grid-add-cars").val(), 
-						$("#grid-time-step").val(),
-						$("#grid-cluster-delay").val()), 
-					function(data) {
-						if(!is_failed_data(data, true)) {
-							log("Settings updated successfully!", 'success');
-							setTimeout(function() {
-								make_request(
-									data_setting(
-										["flow"], 
-										[$("input[name=grid-state]:checked").val()]), 
-									function(data) {
-										if(!is_failed_data(data, true))
-											window.location.reload(true);
-									});
-							}, 200);
-						}
-					});
-			}
+				setting_reset();
 		});
 	    $(".full-height").css({ "height": $(document).height() }).fadeIn(1000);
 	    $('#log').css({ "margin-top":  $(document).height() -  $("#log").height() - 180 }).fadeIn(100, function() { $('#log-spin').hide(); });
@@ -170,16 +181,16 @@
 		var grid = [];
 		update_info(function (info){
 			log("Valid communication with server stablished!", "success");
-			log("Retrieving city's information.....");
+			log("Retrieving structure's information.....");
 			make_request(
 				data_feedback(),
 				function(data) {
 					if(!is_failed_data(data)) {
 						info.feed = data;
 						$("#log-content log").first().remove();
-						log("Building city structure!");
+						log("Building the structure!");
 						grid = draw_grid('mynetwork', info);
-						log("City structure created successfully!", 'success');
+						log("The structure created successfully!", 'success');
 						simulate(grid);
 					}
 				});

@@ -16,22 +16,31 @@ function simulate(grid) {
 						var st = feed[i][j];
 						for(var k = 0; st !== undefined && k < st.length; k++) {
 							var tw = st[k].size.reduce((a, b) => a + b, 0);
-							grid.updateEdge(get_street_coord(st[k]), {value: tw, title: ['['+st[k].size.toString()+']', 'tw: '+ tw].join(' ')});
+							grid.updateEdge(get_street_coord(st[k]), { value: tw, title: ['['+st[k].size.toString()+']', 'tw: '+ tw].join(' ') });
 						}
 					}
 				}
 				// update the joints' traffic weight
 				for(var i = 0; i < grid.size[0]; i++) {
 					for(var j = 0; j < grid.size[0]; j++) {
-						var node = grid.getNode([i,j]);
-						var st = node.streets;
 						var val = 0;
-						for(var k = 0; st !== undefined && k < st.length; k++) 
-							val += st[k].size.reduce((a, b) => a + b, 0);
-						grid.updateNode([i,j], {value: val, title: ['['+[i,j].toString()+']', 'tw: '+ val].join(' ')});
+						var new_streets = [];
+						var st = grid.getNode([i,j]).streets;
+						for(var k = 0; st !== undefined && k < st.length; k++) {
+							ctr = get_street_coord(st[k]);
+							pnode = feed[ctr[0]][ctr[1]];
+							for(var m = 0; m < pnode.length; m++) {
+								if(pnode[m].dir == ctr[2]) {
+									val += pnode[m].size.reduce((a, b) => a + b, 0);
+									new_streets.push(pnode[m]);
+									break;
+								}
+							} 
+						}
+						grid.updateNode([i,j], {value: val, streets: new_streets, title: ['['+[i,j].toString()+']', 'tw: '+ val].join(' ')});
 					}
 				}
-				setTimeout(simulate, 1000, grid);
+				setTimeout(simulate, 100, grid);
 			}
 		}, false);
 }
