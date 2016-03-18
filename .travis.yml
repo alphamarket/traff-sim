@@ -36,4 +36,5 @@ script:
 
 notifications:
   email:
-    on_failure: always
+    recipients:
+        - b.g.dariush+repo@gmail.com
