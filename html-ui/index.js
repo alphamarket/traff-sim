@@ -3,17 +3,17 @@ function log(data, type) {
 	$("#log-content")
 		.prepend('<log class="list-group-item list-group-item-'+type+'"><i class="fa fa-angle-double-right"></i> '+data+'</li>');
 };
-// get data for help command 
-function data_help() 
+// get data for help command
+function data_help()
 	{ return {op: "help"}; };
 // get data for feedback command
-function data_feedback() 
+function data_feedback()
 	{ return { op: "feedback" }; };
 // get data for information retrival command
-function data_get_info() 
+function data_get_info()
 	{ return { op: "get_info" }; };
 // get data for grid initialization command
-function data_init(_size, _cars_no, _time_step, _cluster_delay) { 
+function data_init(_size, _cars_no, _time_step, _cluster_delay) {
 	return {
  		op: "init",
  		params: {
@@ -22,14 +22,14 @@ function data_init(_size, _cars_no, _time_step, _cluster_delay) {
 	 		time_step: _time_step,
 	 		cluster_delay: _cluster_delay
  		}
-	}; 
+	};
 };
 // get data for setting command
-function data_setting(key, value) { 
+function data_setting(key, value) {
 	var key = typeof key !== 'undefined' ?  key : [];
 	var value = typeof value !== 'undefined' ?  value : [];
-	if(key.length !== value.length) throw "invalid input!"; 
-	return { op: "setting", set: { key: key, value: value } }; 
+	if(key.length !== value.length) throw "invalid input!";
+	return { op: "setting", set: { key: key, value: value } };
 };
 // makes a request to server
 // on successful result the callback will get fired
@@ -49,10 +49,10 @@ function make_request(data, succ_callback, indicate) {
 	}).always(function() { $('#log-spin').fadeIn(); });
 };
 // validates if the incomming data from server contains a failure message?
-function is_failed_data(data, do_log) { 
+function is_failed_data(data, do_log) {
 	var do_log = typeof do_log !== 'undefined' ?  do_log : false;
 	if(data.result === undefined || data.result !== "failed") return false;
-	if(do_log) log("<b>Error " + data.code + ": " + data.detail + "</b>", "danger"); 
+	if(do_log) log("<b>Error " + data.code + ": " + data.detail + "</b>", "danger");
 	return true;
 };
 // create a 2D array
@@ -80,19 +80,14 @@ function convert_feed(grid_size, feed) {
 // draw a grid in a element based on the grid information passed on
 function draw_grid(elem, grid) {
 	if(grid.grid_size === undefined || grid.grid_size.length !== 2) throw "Invalid grid info!";
-
-	var nodes = []; 
+	var nodes = [];
 	var edges = [];
-	
 	var h = grid.grid_size[0]
 	var w = grid.grid_size[1];
-
 	var nodes_id = makeArray(h, w);
-
 	grid.feed = convert_feed(grid.grid_size, grid.feed);
-
 	// create nodes
-	for(var i = 0, n = 0; i < h; i++) { 
+	for(var i = 0, n = 0; i < h; i++) {
 		for(var j = 0; j < w; j++) {
 			// define a node
 			var node = {
@@ -123,7 +118,7 @@ function draw_grid(elem, grid) {
 				var prev_s = prev.streets;
 				for (var k = 0; k < prev_s.length; k++) {
 					if(prev_s[k].dir === 'D') {
-						node.y = prev.y + 300 * Math.log(prev_s[k].length); 
+						node.y = prev.y + 300 * Math.log(prev_s[k].length);
 						// also count the incommig traffics to current joint
 						node.value += prev_s[k].traffic_weight;
 						// consider this street too
@@ -138,7 +133,7 @@ function draw_grid(elem, grid) {
 		}
 	}
 	// create edges
-	for(var i = 0, n = 0; i < h; i++) { 
+	for(var i = 0, n = 0; i < h; i++) {
 		for(var j = 0; j < w; j++) {
 			// a fail-safe for in case of [h: 1, w: 1]
 			if(grid.feed[i] === undefined) continue;
@@ -153,11 +148,11 @@ function draw_grid(elem, grid) {
 				// make sure no out sider
 				var cst = get_street_coord(s[k]);
 				if(cst[0] != i || cst[1] != j) continue;
-				// increment the traffic weight of current joint by current street's traffic weight  
+				// increment the traffic weight of current joint by current street's traffic weight
 				nodes[nodes_id[i][j]].value += s[k].traffic_weight;
 				// create the edge
 				edges.push({from: nodes_id[i][j], to: nodes_id[t[0]][t[1]], value: s[k].traffic_weight, title: s[k].traffic_weight, tag: s[k], color: "#D2E5FF"});
-				// make a reference to the created edge to be accessed via the node instance 
+				// make a reference to the created edge to be accessed via the node instance
 				nodes[nodes_id[i][j]].edges.push(edges[edges.length-1]);
 			}
 		}
@@ -186,15 +181,15 @@ function draw_grid(elem, grid) {
 		edges: new vis.DataSet(edges)
 	};
 	// return the the grid object
-	return { 
-		network: new vis.Network(document.getElementById(elem), data, options), 
-		nodes: data.nodes, 
-		edges: data.edges, 
+	return {
+		network: new vis.Network(document.getElementById(elem), data, options),
+		nodes: data.nodes,
+		edges: data.edges,
 		nodes_id: nodes_id,
 		size: [h, w],
-		getNodeID: function(coord) { 
-			if(coord.length !== 2) throw "the `coord` need to be a 2D coordination instance, i.e [x,y]."; 
-			return this.nodes_id[coord[0]][coord[1]]; 
+		getNodeID: function(coord) {
+			if(coord.length !== 2) throw "the `coord` need to be a 2D coordination instance, i.e [x,y].";
+			return this.nodes_id[coord[0]][coord[1]];
 		},
 		getEdgeID: function(coord) {
 			if(coord.length !== 3) throw "the `coord` need to be a 3D coordination + direction instance, i.e [x,y,('R','D')].";
@@ -217,7 +212,7 @@ function draw_grid(elem, grid) {
 			// extent the setting
 			jQuery.extend(set, opt);
 			// update it
-			return this.nodes.update(set);	
+			return this.nodes.update(set);
 		},
 		updateEdge: function(coord, opt) {
 			// compute the id

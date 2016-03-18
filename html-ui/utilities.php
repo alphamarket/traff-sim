@@ -12,4 +12,3 @@ function _fail($code, $detail) {
 }
 
 function _hash($str) { return sha1(md5("$$str$")); }
-

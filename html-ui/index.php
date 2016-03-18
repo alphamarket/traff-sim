@@ -19,8 +19,6 @@
     <![endif]-->
 </head>
 <body style='overflow: hidden;'>
-
-
 <style type="text/css">
 	.section {
 		border-bottom: 3px solid #e6e6e6; width: 33%;
@@ -35,17 +33,31 @@
 	}
 	#log-content {
 		height: 100%;
-		overflow-x: hidden; 
- 		word-wrap: break-word; 
+		overflow-x: hidden;
+ 		word-wrap: break-word;
  		overflow-y: auto;
  		font-size: 14px;
  		font-weight: 500;
 	}
+	#network-header {
+		height: 100px;
+		font: 30px arial;
+	}
+	#network-header > div{
+		border-right:1px solid #ddd;
+		border-bottom:1px solid #ddd;
+		height: 100%;
+		padding-top: 33px;
+	}
 </style>
-
+<div class='row' id="network-header">
+	<div class="hidden-sm hidden-xs col-md-4 text-center">Actual</div>
+	<div class="hidden-sm hidden-xs col-md-4 text-center">Prediction</div>
+</div>
 <div class="row">
-  	<div id="mynetwork" class="full-height col-md-8" style="border-right:1px solid #ddd"></div>
-	<div id="sidebar" class="full-height col-md-4"  style="padding: 20px; padding-right: 30px; position: relative; min-height: 100px">
+  	<div id="network-1" class="full-height col-md-4" offset='100' style="border-right:1px solid #ddd"></div>
+  	<div id="network-2" class="full-height col-md-4" style="border-right:1px solid #ddd"></div>
+	<div id="sidebar" class="full-height col-md-4"  style="margin-top: -100px; padding: 20px; padding-right: 30px; position: relative; min-height: 100px">
 		<h2 class="pull-left">ParticleMeter</h2>
 		<h3 class="pull-right"><small>developed by <a href="http://github.com/noise2" target="__blank"><span class='glyphicon glyphicon-new-window'></span> Dariush Hasanpoor</a></small></h3>
 		<div class="clearfix"></div>
@@ -104,28 +116,18 @@
 		</div>
 	</div>
 </div>
-
-
-<script src="/statics/js/jquery.min.js" type="text/javascript"></script> 
-<script src="/statics/js/bootstrap.min.js" type="text/javascript"></script> 
+<script src="/statics/js/jquery.min.js" type="text/javascript"></script>
+<script src="/statics/js/bootstrap.min.js" type="text/javascript"></script>
 <script type="text/javascript" src="vis/vis.js"></script>
 <script type="text/javascript" src="index.js"></script>
 <script type="text/javascript" src="simulate.js"></script>
 <script type="text/javascript">
-	var pool_intervals 	= [];
-	function createInterval(name, callback, interval) { pool_intervals.push({name: name, id: setInterval(callback, interval) }); }
-	function stopInterval(name) { 
-		console.log(pool_intervals);
-		for(var i = 0; i < pool_intervals.length; i++) 
-			if(pool_intervals[i].name === name) 
-				clearInterval(pool_intervals[i].id);
-	}
 	$(document).ready(function(){
 		function setting_update() {
 			make_request(
 				data_setting(
 					["flow", "time_step", "cluster_delay", "add_cars"],
-					[$("input[name=grid-state]:checked").val(), $("#grid-time-step").val(), $("#grid-cluster-delay").val(), $("#grid-add-cars").val()]), 
+					[$("input[name=grid-state]:checked").val(), $("#grid-time-step").val(), $("#grid-cluster-delay").val(), $("#grid-add-cars").val()]),
 				function(data) {
 					if(!is_failed_data(data, true)) {
 						$("#grid-time-step").fadeOut(500).fadeIn(1000);
@@ -140,18 +142,18 @@
 		function setting_reset() {
 			make_request(
 				data_init(
-					[$("#grid-height").val(), $("#grid-width").val()], 
-					$("#grid-add-cars").val(), 
+					[$("#grid-height").val(), $("#grid-width").val()],
+					$("#grid-add-cars").val(),
 					$("#grid-time-step").val(),
-					$("#grid-cluster-delay").val()), 
+					$("#grid-cluster-delay").val()),
 				function(data) {
 					if(!is_failed_data(data, true)) {
 						log("Settings updated successfully!", 'success');
 						setTimeout(function() {
 							make_request(
 								data_setting(
-									["flow"], 
-									[$("input[name=grid-state]:checked").val()]), 
+									["flow"],
+									[$("input[name=grid-state]:checked").val()]),
 								function(data) {
 									if(!is_failed_data(data, true))
 										window.location.reload(true);
@@ -170,31 +172,45 @@
 			if($("#grid-height").val() == $("#grid-height").data('oldval') && $("#grid-width").val() == $("#grid-width").data('oldval'))
 				// the grid size remained unchanged, only update some settings
 				setting_update()
-			else 
+			else
 				// since the grid's size changed, we need to re-init the grid
 				setting_reset();
 		});
-	    $(".full-height").css({ "height": $(document).height() }).fadeIn(1000);
+		$(".full-height").each(function() {
+			if(!$(this).attr('offset')) $(this).attr('offset', 0);
+	    	$(this).css({ "height": $(document).height() - $(this).attr('offset') }).fadeIn(1000);
+    	});
 	    $('#log').css({ "margin-top":  $(document).height() -  $("#log").height() - 180 }).fadeIn(100, function() { $('#log-spin').hide(); });
 		$('.only-number-allowed').keypress(function(e) { return e.charCode >= 48 && e.charCode <= 57; });
-
-		var grid = [];
-		update_info(function (info){
-			log("Valid communication with server stablished!", "success");
-			log("Retrieving structure's information.....");
-			make_request(
-				data_feedback(),
-				function(data) {
-					if(!is_failed_data(data)) {
-						info.feed = data;
-						$("#log-content log").first().remove();
-						log("Building the structure!");
-						grid = draw_grid('mynetwork', info);
-						log("The structure created successfully!", 'success');
-						simulate(grid);
-					}
-				});
-		});
+		var build_and_simulate = function(target, info, data) {
+			if(!is_failed_data(data)) {
+				info.feed = data;
+				log("Building the structure!");
+				log("The structure created successfully!", 'success');
+				simulate(draw_grid(target, info));
+			}
+		}
+		// parallel building network-1
+		setTimeout(function() {
+			update_info(function (info){
+				make_request(
+					data_feedback(),
+					function(data) {
+						log("Valid communication with server stablished!", "success");
+						build_and_simulate('network-1', info, data);
+					});
+			});
+		}, 100);
+		// parallel building network-2
+		setTimeout(function() {
+			update_info(function (info){
+				make_request(
+					data_feedback(),
+					function(data) {
+						build_and_simulate('network-2', info, data);
+					});
+			});
+		}, 100);
 	});
 </script>
 </body>
