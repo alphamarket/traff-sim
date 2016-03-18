@@ -1,9 +1,22 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+
+#ifdef __unused
+#   define __unused_bk __unused
+#   undef __unused
+#endif
+// this should be after `stdafx.hpp` because contain a `__unused` var in it
+//  which also defined in `stdafx.hpp` that causes a problem
+#include <boost/asio.hpp>
+
+#if defined(__unused_bk) && !defined(__unused)
+#   define __unused __unused_bk
+#   undef __unused_bk
+#endif
+
 #include "stdafx.hpp"
 #include <unordered_map>
-#include <boost/asio.hpp>
 
 using boost::asio::ip::tcp;
 
